@@ -17,8 +17,12 @@
    limitations under the License.
 -->
 
+<!-- value="http://repo1.maven.org/maven2/"  -->
   <property name="repo.maven.org"
-    value="http://repo1.maven.org/maven2/" override="false"/>
+    value="http://maven.aliyun.com/nexus/content/groups/public/"
+    override="false"/>
+    
+    
   <property name="repo.jboss.org"
     value="http://repository.jboss.org/nexus/content/groups/public/" override="false"/>
   <property name="repo.sun.org"
@@ -38,8 +42,8 @@
 
     <chain name="default" dual="true">
       <resolver ref="maven2"/>
-      <resolver ref="jboss-maven2"/>
-      <resolver ref="sun-maven2"/>
+<!--       <resolver ref="jboss-maven2"/>
+      <resolver ref="sun-maven2"/> -->
     </chain>
 
   </resolvers>
