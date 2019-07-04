@@ -24,7 +24,7 @@ package org.apache.zookeeper.server.quorum;
  */
 public class StateSummary {
 	private long currentEpoch;
-	private long lastZxid;
+	private long lastZxid; // MARK zxid of the last proposal in the history
 	public StateSummary(long currentEpoch, long lastZxid) {
 		this.currentEpoch = currentEpoch;
 		this.lastZxid = lastZxid;

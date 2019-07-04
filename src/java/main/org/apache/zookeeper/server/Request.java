@@ -29,7 +29,7 @@ import org.apache.zookeeper.ZooDefs.OpCode;
 import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.txn.TxnHeader;
 
-/**
+/** MARK 请求数据结构抽象, 通过RequestProcessor链.
  * This is the structure that represents a request moving through a chain of
  * RequestProcessors. There are various pieces of information that is tacked
  * onto the request as it is processed.
@@ -37,15 +37,31 @@ import org.apache.zookeeper.txn.TxnHeader;
 public class Request {
     private static final Logger LOG = LoggerFactory.getLogger(Request.class);
 
-    public final static Request requestOfDeath = new Request(null, 0, 0, 0,
-            null, null);
+    public final static Request requestOfDeath = new Request(null, 0, 0, 0, null, null);
 
+    public final ServerCnxn cnxn;
+    public final long sessionId;
+    
+    public TxnHeader hdr;
+    public final int cxid;              // MARK 请求创建的事务ID
+    public final int type;
+    public long zxid = -1;              // MARK ZK事务ID
+    
+    public Record txn;
+    public final ByteBuffer request;
+    
+    public final List<Id> authInfo;
+    public final long createTime = System.currentTimeMillis();
+    private Object owner;               // MARK 请求者标识
+    private KeeperException e;          // MARK 请求相关的异常
+    
     /**
-     * @param cnxn
-     * @param sessionId
-     * @param xid
-     * @param type
-     * @param bb
+     * @param cnxn 客户端链接
+     * @param sessionId 会话ID
+     * @param xid cxid(请求创建的事务ID)
+     * @param type org.apache.zookeeper.ZooDefs.OpCode
+     * @param bb 请求内容
+     * @param authInfo
      */
     public Request(ServerCnxn cnxn, long sessionId, int xid, int type,
             ByteBuffer bb, List<Id> authInfo) {
@@ -56,30 +72,6 @@ public class Request {
         this.request = bb;
         this.authInfo = authInfo;
     }
-
-    public final long sessionId;
-
-    public final int cxid;
-
-    public final int type;
-
-    public final ByteBuffer request;
-
-    public final ServerCnxn cnxn;
-
-    public TxnHeader hdr;
-
-    public Record txn;
-
-    public long zxid = -1;
-
-    public final List<Id> authInfo;
-
-    public final long createTime = System.currentTimeMillis();
-    
-    private Object owner;
-    
-    private KeeperException e;
 
     public Object getOwner() {
         return owner;

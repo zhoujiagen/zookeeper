@@ -58,18 +58,15 @@ import org.apache.zookeeper.server.util.OSMXBean;
 public class NIOServerCnxn extends ServerCnxn {
     static final Logger LOG = LoggerFactory.getLogger(NIOServerCnxn.class);
 
-    NIOServerCnxnFactory factory;
-
     final SocketChannel sock;
-
     private final SelectionKey sk;
-
+    NIOServerCnxnFactory factory;
+    
     boolean initialized;
 
     ByteBuffer lenBuffer = ByteBuffer.allocate(4);
-
+    /** 被修改: {@link #readLength(SelectionKey)}*/
     ByteBuffer incomingBuffer = lenBuffer;
-
     LinkedBlockingQueue<ByteBuffer> outgoingBuffers = new LinkedBlockingQueue<ByteBuffer>();
 
     int sessionTimeout;
@@ -96,6 +93,7 @@ public class NIOServerCnxn extends ServerCnxn {
         this.sock = sock;
         this.sk = sk;
         this.factory = factory;
+        
         if (this.factory.login != null) {
             this.zooKeeperSaslServer = new ZooKeeperSaslServer(factory.login);
         }
@@ -103,11 +101,9 @@ public class NIOServerCnxn extends ServerCnxn {
             outstandingLimit = zk.getGlobalOutstandingLimit();
         }
         sock.socket().setTcpNoDelay(true);
-        /* set socket linger to false, so that socket close does not
-         * block */
+        /* set socket linger to false, so that socket close does not block */
         sock.socket().setSoLinger(false, -1);
-        InetAddress addr = ((InetSocketAddress) sock.socket()
-                .getRemoteSocketAddress()).getAddress();
+        InetAddress addr = ((InetSocketAddress) sock.socket().getRemoteSocketAddress()).getAddress();
         authInfo.add(new Id("ip", addr.getHostAddress()));
         sk.interestOps(SelectionKey.OP_READ);
     }
@@ -193,25 +189,24 @@ public class NIOServerCnxn extends ServerCnxn {
 
         if (incomingBuffer.remaining() == 0) { // have we read length bytes?
             packetReceived();
+            
             incomingBuffer.flip();
             if (!initialized) {
-                readConnectRequest();
+                readConnectRequest();   // MARK 调用server处理连接请求
             } else {
-                readRequest();
+                readRequest();          // MARK 调用server处理请求
             }
             lenBuffer.clear();
             incomingBuffer = lenBuffer;
         }
     }
 
-    /**
-     * Only used in order to allow testing
-     */
+    /** Only used in order to allow testing */
     protected boolean isSocketOpen() {
         return sock.isOpen();
     }
 
-    /**
+    /** MARK 处理链接上的读写请求.
      * Handles read/write IO on connection.
      */
     void doIO(SelectionKey k) throws InterruptedException {
@@ -222,6 +217,8 @@ public class NIOServerCnxn extends ServerCnxn {
 
                 return;
             }
+            
+            // MARK 处理socket读
             if (k.isReadable()) {
                 int rc = sock.read(incomingBuffer);
                 if (rc < 0) {
@@ -230,6 +227,7 @@ public class NIOServerCnxn extends ServerCnxn {
                             + Long.toHexString(sessionId)
                             + ", likely client has closed socket");
                 }
+                
                 if (incomingBuffer.remaining() == 0) {
                     boolean isPayload;
                     if (incomingBuffer == lenBuffer) { // start of next request
@@ -241,15 +239,16 @@ public class NIOServerCnxn extends ServerCnxn {
                         isPayload = true;
                     }
                     if (isPayload) { // not the case for 4letterword
-                        readPayload();
-                    }
-                    else {
+                        readPayload(); // MARK 读负载
+                    } else {
                         // four letter words take care
                         // need not do anything else
                         return;
                     }
                 }
             }
+            
+            // MARK 处理socket写
             if (k.isWritable()) {
                 // ZooLog.logTraceMessage(LOG,
                 // ZooLog.CLIENT_DATA_PACKET_TRACE_MASK
@@ -930,7 +929,7 @@ public class NIOServerCnxn extends ServerCnxn {
         if (zkServer == null) {
             throw new IOException("ZooKeeperServer not running");
         }
-        incomingBuffer = ByteBuffer.allocate(len);
+        incomingBuffer = ByteBuffer.allocate(len);    // MARK 重新创建incomingBuffer
         return true;
     }
 

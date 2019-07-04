@@ -36,6 +36,7 @@ else
   . "$ZOOBINDIR"/zkEnv.sh
 fi
 
+# MARK 命令行客户端入口
 "$JAVA" "-Dzookeeper.log.dir=${ZOO_LOG_DIR}" "-Dzookeeper.root.logger=${ZOO_LOG4J_PROP}" \
      -cp "$CLASSPATH" $CLIENT_JVMFLAGS $JVMFLAGS \
      org.apache.zookeeper.ZooKeeperMain "$@"

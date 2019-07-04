@@ -67,11 +67,12 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
     */
     final ByteBuffer directBuffer = ByteBuffer.allocateDirect(64 * 1024);
 
-    final HashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
-        new HashMap<InetAddress, Set<NIOServerCnxn>>( );
+    final HashMap<InetAddress, Set<NIOServerCnxn>> ipMap = new HashMap<InetAddress, Set<NIOServerCnxn>>( );
 
     int maxClientCnxns = 60;
 
+    Thread thread;
+    
     /**
      * Construct a new server connection factory which will accept an unlimited number
      * of concurrent connections from each client (up to the file descriptor
@@ -80,20 +81,23 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
      */
     public NIOServerCnxnFactory() throws IOException {
     }
-
-    Thread thread;
+    
     @Override
     public void configure(InetSocketAddress addr, int maxcc) throws IOException {
         configureSaslLogin();
 
+        // MARK 创建线程
         thread = new Thread(this, "NIOServerCxn.Factory:" + addr);
         thread.setDaemon(true);
         maxClientCnxns = maxcc;
+        
+        // MARK 创建ServiceSocketChannel
         this.ss = ServerSocketChannel.open();
         ss.socket().setReuseAddress(true);
         LOG.info("binding to port " + addr);
         ss.socket().bind(addr);
         ss.configureBlocking(false);
+        
         ss.register(selector, SelectionKey.OP_ACCEPT);
     }
 
@@ -156,8 +160,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
         }
     }
 
-    protected NIOServerCnxn createConnection(SocketChannel sock,
-            SelectionKey sk) throws IOException {
+    protected NIOServerCnxn createConnection(SocketChannel sock, SelectionKey sk) throws IOException {
         return new NIOServerCnxn(zkServer, sock, sk, this);
     }
 
@@ -172,66 +175,72 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory implements Runnable 
         }
     }
 
+    @Override
     public void run() {
         while (!ss.socket().isClosed()) {
             try {
                 selector.select(1000);
+                
                 Set<SelectionKey> selected;
                 synchronized (this) {
                     selected = selector.selectedKeys();
                 }
-                ArrayList<SelectionKey> selectedList = new ArrayList<SelectionKey>(
-                        selected);
+                ArrayList<SelectionKey> selectedList = new ArrayList<SelectionKey>(selected);
                 Collections.shuffle(selectedList);
+                
                 for (SelectionKey k : selectedList) {
+                    // MARK accept
                     if ((k.readyOps() & SelectionKey.OP_ACCEPT) != 0) {
-                        SocketChannel sc = ((ServerSocketChannel) k
-                                .channel()).accept();
+                        SocketChannel sc = ((ServerSocketChannel) k .channel()).accept();
                         InetAddress ia = sc.socket().getInetAddress();
+                        
                         int cnxncount = getClientCnxnCount(ia);
                         if (maxClientCnxns > 0 && cnxncount >= maxClientCnxns){
-                            LOG.warn("Too many connections from " + ia
-                                     + " - max is " + maxClientCnxns );
+                            LOG.warn("Too many connections from " + ia + " - max is " + maxClientCnxns );
                             sc.close();
                         } else {
-                            LOG.info("Accepted socket connection from "
-                                     + sc.socket().getRemoteSocketAddress());
+                            LOG.info("Accepted socket connection from " + sc.socket().getRemoteSocketAddress());
                             sc.configureBlocking(false);
-                            SelectionKey sk = sc.register(selector,
-                                    SelectionKey.OP_READ);
+                            SelectionKey sk = sc.register(selector, SelectionKey.OP_READ); // MARK SocketChannel-Selector-SelectionKey-[NIOServerCnxn]
                             NIOServerCnxn cnxn = createConnection(sc, sk);
                             sk.attach(cnxn);
-                            addCnxn(cnxn);
+                            addCnxn(cnxn); // MARK 记录连接
                         }
-                    } else if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {
+                    } 
+                    
+                    // MARK read, write
+                    else if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {
                         NIOServerCnxn c = (NIOServerCnxn) k.attachment();
-                        c.doIO(k);
-                    } else {
+                        c.doIO(k); // MARK 处理连接上的读写请求
+                    } 
+                    
+                    // MARK others
+                    else {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Unexpected ops in select "
-                                      + k.readyOps());
+                            LOG.debug("Unexpected ops in select " + k.readyOps());
                         }
                     }
                 }
+                
                 selected.clear();
+                
             } catch (RuntimeException e) {
                 LOG.warn("Ignoring unexpected runtime exception", e);
             } catch (Exception e) {
                 LOG.warn("Ignoring exception", e);
             }
         }
+        
         closeAll();
         LOG.info("NIOServerCnxn factory exited run method");
     }
 
-    /**
-     * clear all the connections in the selector
-     *
-     */
+    /** clear all the connections in the selector */
     @Override
     @SuppressWarnings("unchecked")
     synchronized public void closeAll() {
         selector.wakeup();
+        
         HashSet<NIOServerCnxn> cnxns;
         synchronized (this.cnxns) {
             cnxns = (HashSet<NIOServerCnxn>)this.cnxns.clone();

@@ -18,7 +18,7 @@
 
 package org.apache.zookeeper;
 
-/**
+/** MARK 事件处理器接口定义.
  * This interface specifies the public interface an event handler class must
  * implement. A ZooKeeper client will get various events from the ZooKeepr
  * server it connects to. An application using such a client handles these

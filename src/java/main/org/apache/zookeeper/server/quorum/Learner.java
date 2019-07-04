@@ -202,13 +202,12 @@ public class Learner {
             }
         }
         if (addr == null) {
-            LOG.warn("Couldn't find the leader with id = "
-                    + current.getId());
+            LOG.warn("Couldn't find the leader with id = " + current.getId());
         }
         return addr;
     }
     
-    /**
+    /** MARK 建立到leader的连接: 放弃前试5次.
      * Establish a connection with the Leader found by findLeader. Retries
      * 5 times before giving up. 
      * @param addr - the address of the Leader to connect to.
@@ -230,8 +229,7 @@ public class Learner {
                     LOG.error("Unexpected exception",e);
                     throw e;
                 } else {
-                    LOG.warn("Unexpected exception, tries="+tries+
-                            ", connecting to " + addr,e);
+                    LOG.warn("Unexpected exception, tries=" + tries + ", connecting to " + addr,e);
                     sock = new Socket();
                     sock.setSoTimeout(self.tickTime * self.initLimit);
                 }

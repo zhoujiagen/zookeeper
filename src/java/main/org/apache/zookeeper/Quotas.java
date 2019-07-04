@@ -18,10 +18,8 @@
 
 package org.apache.zookeeper;
 
-/**
- * this class manages quotas
- * and has many other utils
- * for quota
+/** MARK 配额工具类.
+ * this class manages quotas and has many other utils for quota
  */
 public class Quotas {
 
@@ -32,32 +30,23 @@ public class Quotas {
      * management node for zookeeper */
     public static final String quotaZookeeper = "/zookeeper/quota";
 
-    /**
-     * the limit node that has the limit of
-     * a subtree
-     */
+    /** the limit node that has the limit of a subtree: zookeeper_limits */
     public static final String limitNode = "zookeeper_limits";
 
-    /**
-     * the stat node that monitors the limit of
-     * a subtree.
-     */
+    /** the stat node that monitors the limit of a subtree: zookeeper_stats */
     public static final String statNode = "zookeeper_stats";
 
     /**
-     * return the quota path associated with this
-     * prefix
+     * return the quota path associated with this prefix
      * @param path the actual path in zookeeper.
      * @return the limit quota path
      */
     public static String quotaPath(String path) {
-        return quotaZookeeper + path +
-        "/" + limitNode;
+        return quotaZookeeper + path + "/" + limitNode;
     }
 
     /**
-     * return the stat quota path associated with this
-     * prefix.
+     * return the stat quota path associated with this prefix.
      * @param path the actual path in zookeeper
      * @return the stat quota path
      */

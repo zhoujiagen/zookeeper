@@ -20,7 +20,7 @@ package org.apache.jute;
 
 import java.io.IOException;
 
-/**
+/** MARK 反序列化接口.
  * Interface that all the Deserializers have to implement.
  *
  */

@@ -18,6 +18,7 @@
 
 package org.apache.zookeeper.server.util;
 
+/** MARK 事务ID(epoch+counter)工具类. */
 public class ZxidUtils {
 	static public long getEpochFromZxid(long zxid) {
 		return zxid >> 32L;

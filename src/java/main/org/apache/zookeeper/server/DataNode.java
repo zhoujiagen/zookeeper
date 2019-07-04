@@ -42,14 +42,10 @@ public class DataNode implements Record {
     /** the data for this datanode */
     byte data[];
 
-    /**
-     * the acl map long for this datanode. the datatree has the map
-     */
+    /** the acl map long for this datanode. the datatree has the map */
     Long acl;
 
-    /**
-     * the stat for this node that is persisted to disk.
-     */
+    /** the stat for this node that is persisted to disk. */
     public StatPersisted stat;
 
     /**
@@ -88,8 +84,7 @@ public class DataNode implements Record {
     /**
      * Method that inserts a child into the children set
      * 
-     * @param child
-     *            to be inserted
+     * @param child to be inserted
      * @return true if this set did not already contain the specified element
      */
     public synchronized boolean addChild(String child) {

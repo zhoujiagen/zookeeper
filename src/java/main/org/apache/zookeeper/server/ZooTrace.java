@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.zookeeper.server.quorum.QuorumPacket;
 
-/**
+/** MARK 基于log4j的server trace工具类.
  * This class encapsulates and centralizes tracing for the ZooKeeper server.
  * Trace messages go to the log with TRACE level.
  * <p>

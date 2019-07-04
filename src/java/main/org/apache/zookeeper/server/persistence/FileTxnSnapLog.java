@@ -38,25 +38,21 @@ import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/** MARK 事务日志和快照的聚合帮助类.
  * This is a helper class 
  * above the implementations 
  * of txnlog and snapshot 
  * classes
  */
 public class FileTxnSnapLog {
-    //the direcotry containing the 
-    //the transaction logs
-    private final File dataDir;
-    //the directory containing the
-    //the snapshot directory
-    private final File snapDir;
-    private TxnLog txnLog;
-    private SnapShot snapLog;
+    private static final Logger LOG = LoggerFactory.getLogger(FileTxnSnapLog.class);  
+  
+    private final File dataDir; //the direcotry containing the the transaction logs
+    private final File snapDir; //the directory containing the the snapshot directory
+    private TxnLog txnLog;             // MARK 事务日志
+    private SnapShot snapLog;          // MARK 快照
     public final static int VERSION = 2;
     public final static String version = "version-";
-    
-    private static final Logger LOG = LoggerFactory.getLogger(FileTxnSnapLog.class);
     
     /**
      * This listener helps
@@ -69,9 +65,8 @@ public class FileTxnSnapLog {
         void onTxnLoaded(TxnHeader hdr, Record rec);
     }
     
-    /**
-     * the constructor which takes the datadir and 
-     * snapdir.
+    /** MARK 日志目录或快照目录不存在则创建
+     * the constructor which takes the datadir and snapdir.
      * @param dataDir the trasaction directory
      * @param snapDir the snapshot directory
      */
@@ -82,14 +77,12 @@ public class FileTxnSnapLog {
         this.snapDir = new File(snapDir, version + VERSION);
         if (!this.dataDir.exists()) {
             if (!this.dataDir.mkdirs()) {
-                throw new IOException("Unable to create data directory "
-                        + this.dataDir);
+                throw new IOException("Unable to create data directory " + this.dataDir);
             }
         }
         if (!this.snapDir.exists()) {
             if (!this.snapDir.mkdirs()) {
-                throw new IOException("Unable to create snap directory "
-                        + this.snapDir);
+                throw new IOException("Unable to create snap directory " + this.snapDir);
             }
         }
         txnLog = new FileTxnLog(this.dataDir);
@@ -114,10 +107,8 @@ public class FileTxnSnapLog {
         return this.snapDir;
     }
     
-    /**
-     * this function restores the server 
-     * database after reading from the 
-     * snapshots and transaction logs
+    /** MARK 恢复服务器内存数据库: (1) 恢复快照文件, (2) 回放事务日志.
+     * this function restores the server  database after reading from the snapshots and transaction logs
      * @param dt the datatree to be restored
      * @param sessions the sessions to be restored
      * @param listener the playback listener to run on the 
@@ -125,36 +116,36 @@ public class FileTxnSnapLog {
      * @return the highest zxid restored
      * @throws IOException
      */
-    public long restore(DataTree dt, Map<Long, Integer> sessions, 
-            PlayBackListener listener) throws IOException {
+    public long restore(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
+        // MARK 从快照文件中恢复内存数据库
         snapLog.deserialize(dt, sessions);
+        
         FileTxnLog txnLog = new FileTxnLog(dataDir);
+        // MARK 从快照中最后已处理的事务ID+1开始读取日志, 返回事务迭代器
         TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1);
-        long highestZxid = dt.lastProcessedZxid;
+        long highestZxid = dt.lastProcessedZxid; // MARK 返回结果: 最大的事务ID
         TxnHeader hdr;
         try {
             while (true) {
-                // iterator points to 
-                // the first valid txn when initialized
+                // iterator points to the first valid txn when initialized
                 hdr = itr.getHeader();
-                if (hdr == null) {
-                    //empty logs 
+                if (hdr == null) { //empty logs 
                     return dt.lastProcessedZxid;
                 }
+                
                 if (hdr.getZxid() < highestZxid && highestZxid != 0) {
-                    LOG.error("{}(higestZxid) > {}(next log) for type {}",
-                            new Object[] { highestZxid, hdr.getZxid(),
-                                    hdr.getType() });
+                    LOG.error("{}(higestZxid) > {}(next log) for type {}", new Object[] { highestZxid, hdr.getZxid(), hdr.getType() });
                 } else {
                     highestZxid = hdr.getZxid();
                 }
+                
                 try {
-                    processTransaction(hdr,dt,sessions, itr.getTxn());
+                    processTransaction(hdr, dt, sessions, itr.getTxn());  // MARK 处理事务
                 } catch(KeeperException.NoNodeException e) {
-                   throw new IOException("Failed to process transaction type: " +
-                         hdr.getType() + " error: " + e.getMessage(), e);
+                   throw new IOException("Failed to process transaction type: " + hdr.getType() + " error: " + e.getMessage(), e);
                 }
-                listener.onTxnLoaded(hdr, itr.getTxn());
+                listener.onTxnLoaded(hdr, itr.getTxn());                // MARK 触发监听器回调
+                
                 if (!itr.next()) 
                     break;
             }
@@ -163,24 +154,25 @@ public class FileTxnSnapLog {
                 itr.close();
             }
         }
+        
         return highestZxid;
     }
     
-    /**
+    /** MARK 处理事务: 更新会话, 在内存数据树中处理事务.
      * process the transaction on the datatree
      * @param hdr the hdr of the transaction
      * @param dt the datatree to apply transaction to
-     * @param sessions the sessions to be restored
+     * @param sessions the sessions to be restored - OUT参数
      * @param txn the transaction to be applied
      */
-    public void processTransaction(TxnHeader hdr,DataTree dt,
-            Map<Long, Integer> sessions, Record txn)
+    public void processTransaction(TxnHeader hdr, DataTree dt, Map<Long, Integer> sessions, Record txn)
         throws KeeperException.NoNodeException {
+      
         ProcessTxnResult rc;
         switch (hdr.getType()) {
-        case OpCode.createSession:
-            sessions.put(hdr.getClientId(),
-                    ((CreateSessionTxn) txn).getTimeOut());
+        case OpCode.createSession:  // MARK 创建session
+            sessions.put(hdr.getClientId(), ((CreateSessionTxn) txn).getTimeOut());
+            
             if (LOG.isTraceEnabled()) {
                 ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
                         "playLog --- create session in log: 0x"
@@ -188,19 +180,22 @@ public class FileTxnSnapLog {
                                 + " with timeout: "
                                 + ((CreateSessionTxn) txn).getTimeOut());
             }
+            
             // give dataTree a chance to sync its lastProcessedZxid
             rc = dt.processTxn(hdr, txn);
             break;
-        case OpCode.closeSession:
+        case OpCode.closeSession: // MARK 关闭session
             sessions.remove(hdr.getClientId());
+            
             if (LOG.isTraceEnabled()) {
                 ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
                         "playLog --- close session in log: 0x"
                                 + Long.toHexString(hdr.getClientId()));
             }
+            
             rc = dt.processTxn(hdr, txn);
             break;
-        default:
+        default:                  // MARK 其他事务操作
             rc = dt.processTxn(hdr, txn);
         }
 
@@ -225,22 +220,20 @@ public class FileTxnSnapLog {
         return txnLog.getLastLoggedZxid();
     }
 
-    /**
+    /** MARK 将内存数据树和会话保存到快照中.
      * save the datatree and the sessions into a snapshot
      * @param dataTree the datatree to be serialized onto disk
      * @param sessionsWithTimeouts the sesssion timeouts to be
      * serialized onto disk
      * @throws IOException
      */
-    public void save(DataTree dataTree,
-            ConcurrentHashMap<Long, Integer> sessionsWithTimeouts)
+    public void save(DataTree dataTree, ConcurrentHashMap<Long, Integer> sessionsWithTimeouts)
         throws IOException {
         long lastZxid = dataTree.lastProcessedZxid;
+        // MARK 快照文件命名: snapshot.<数据树中最后处理的事务ID>
         File snapshotFile = new File(snapDir, Util.makeSnapshotName(lastZxid));
-        LOG.info("Snapshotting: 0x{} to {}", Long.toHexString(lastZxid),
-                snapshotFile);
+        LOG.info("Snapshotting: 0x{} to {}", Long.toHexString(lastZxid), snapshotFile);
         snapLog.serialize(dataTree, sessionsWithTimeouts, snapshotFile);
-        
     }
 
     /**
@@ -304,7 +297,7 @@ public class FileTxnSnapLog {
         return FileTxnLog.getLogFiles(dataDir.listFiles(), zxid);
     }
 
-    /**
+    /** MARK 追加请求到事务日志中.
      * append the request to the transaction logs
      * @param si the request to be appended
      * returns true iff something appended, otw false 

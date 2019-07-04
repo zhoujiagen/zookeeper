@@ -32,7 +32,7 @@ import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-/**
+/** MARK quorum方式运行server的入口.
  *
  * <h2>Configuration file</h2>
  *
@@ -73,6 +73,9 @@ public class QuorumPeerMain {
      * @param args path to the configfile
      */
     public static void main(String[] args) {
+      // MARK 显示使用Netty
+      //System.setProperty("zookeeper.serverCnxnFactory", "org.apache.zookeeper.server.NettyServerCnxnFactory");
+      
         QuorumPeerMain main = new QuorumPeerMain();
         try {
             main.initializeAndRun(args);
@@ -105,15 +108,15 @@ public class QuorumPeerMain {
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(config
                 .getDataDir(), config.getDataLogDir(), config
                 .getSnapRetainCount(), config.getPurgeInterval());
-        purgeMgr.start();
+        purgeMgr.start();                                                      // MARK 启动清理任务
 
         if (args.length == 1 && config.servers.size() > 0) {
-            runFromConfig(config);
+            runFromConfig(config);                                             // MARK 按quorum方式运行
         } else {
             LOG.warn("Either no config or no quorum defined in config, running "
                     + " in standalone mode");
             // there is only server in the quorum -- run as standalone
-            ZooKeeperServerMain.main(args);
+            ZooKeeperServerMain.main(args);                                    // MARK 按standalone方式运行
         }
     }
 
@@ -126,16 +129,17 @@ public class QuorumPeerMain {
   
       LOG.info("Starting quorum peer");
       try {
+          // MARK 初始化并配置服务器连接工厂
           ServerCnxnFactory cnxnFactory = ServerCnxnFactory.createFactory();
-          cnxnFactory.configure(config.getClientPortAddress(),
-                                config.getMaxClientCnxns());
+          cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns());
   
+          // MARK 初始化并启动QuorumPeer
           quorumPeer = new QuorumPeer();
           quorumPeer.setClientPortAddress(config.getClientPortAddress());
-          quorumPeer.setTxnFactory(new FileTxnSnapLog(
+          quorumPeer.setTxnFactory(new FileTxnSnapLog(                            // MARK 初始化事务日志和快照
                       new File(config.getDataLogDir()),
                       new File(config.getDataDir())));
-          quorumPeer.setQuorumPeers(config.getServers());
+          quorumPeer.setQuorumPeers(config.getServers());                         // MARK participant servers
           quorumPeer.setElectionType(config.getElectionAlg());
           quorumPeer.setMyid(config.getServerId());
           quorumPeer.setTickTime(config.getTickTime());
@@ -145,7 +149,7 @@ public class QuorumPeerMain {
           quorumPeer.setSyncLimit(config.getSyncLimit());
           quorumPeer.setQuorumVerifier(config.getQuorumVerifier());
           quorumPeer.setCnxnFactory(cnxnFactory);
-          quorumPeer.setZKDatabase(new ZKDatabase(quorumPeer.getTxnFactory()));
+          quorumPeer.setZKDatabase(new ZKDatabase(quorumPeer.getTxnFactory())); // MARK 初始化ZK数据库
           quorumPeer.setLearnerType(config.getPeerType());
           quorumPeer.setSyncEnabled(config.getSyncEnabled());
           quorumPeer.setQuorumListenOnAllIPs(config.getQuorumListenOnAllIPs());

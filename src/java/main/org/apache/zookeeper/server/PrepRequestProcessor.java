@@ -80,7 +80,7 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
 
     static boolean skipACL;
     static {
-        skipACL = System.getProperty("zookeeper.skipACL", "no").equals("yes");
+        skipACL = System.getProperty("zookeeper.skipACL", "no").equals("yes"); // MARK 是否跳过ACL检查
         if (skipACL) {
             LOG.info("zookeeper.skipACL==\"yes\", ACL checks will be skipped");
         }

@@ -92,9 +92,7 @@ public class FileTxnLog implements TxnLog {
 
     static long preAllocSize =  65536 * 1024;
 
-    public final static int TXNLOG_MAGIC =
-        ByteBuffer.wrap("ZKLG".getBytes()).getInt();
-
+    public final static int TXNLOG_MAGIC = ByteBuffer.wrap("ZKLG".getBytes()).getInt();
     public final static int VERSION = 2;
 
     /** Maximum time we allow for elapsed fsync before WARNing */
@@ -103,7 +101,7 @@ public class FileTxnLog implements TxnLog {
     static {
         LOG = LoggerFactory.getLogger(FileTxnLog.class);
 
-        String size = System.getProperty("zookeeper.preAllocSize");
+        String size = System.getProperty("zookeeper.preAllocSize"); // MARK 文件事务日志预先分配文件的大小
         if (size != null) {
             try {
                 preAllocSize = Long.parseLong(size) * 1024;
@@ -111,19 +109,18 @@ public class FileTxnLog implements TxnLog {
                 LOG.warn(size + " is not a valid value for preAllocSize");
             }
         }
-        fsyncWarningThresholdMS = Long.getLong("fsync.warningthresholdms", 1000);
+        fsyncWarningThresholdMS = Long.getLong("fsync.warningthresholdms", 1000); // MARK 事务日志fsync警告时间阈值
     }
 
     long lastZxidSeen;
     volatile BufferedOutputStream logStream = null;
-    volatile OutputArchive oa;
     volatile FileOutputStream fos = null;
+    volatile OutputArchive oa;
 
     File logDir;
-    private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");;
+    private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");; // MARK 更新事务日志是否需要同步到介质上
     long dbId;
-    private LinkedList<FileOutputStream> streamsToFlush =
-        new LinkedList<FileOutputStream>();
+    private LinkedList<FileOutputStream> streamsToFlush = new LinkedList<FileOutputStream>();
     long currentSize;
     File logFileWrite = null;
 
@@ -185,25 +182,21 @@ public class FileTxnLog implements TxnLog {
      * @param txn the transaction part of the entry
      * returns true iff something appended, otw false 
      */
-    public synchronized boolean append(TxnHeader hdr, Record txn)
-        throws IOException
+    public synchronized boolean append(TxnHeader hdr, Record txn) throws IOException
     {
         if (hdr != null) {
             if (hdr.getZxid() <= lastZxidSeen) {
-                LOG.warn("Current zxid " + hdr.getZxid()
-                        + " is <= " + lastZxidSeen + " for "
-                        + hdr.getType());
+                LOG.warn("Current zxid " + hdr.getZxid() + " is <= " + lastZxidSeen + " for " + hdr.getType());
             }
-            if (logStream==null) {
+            // MARK 文件不存在时创建, 必要时扩充文件大小
+            if (logStream == null) {
                if(LOG.isInfoEnabled()){
-                    LOG.info("Creating new log file: log." +  
-                            Long.toHexString(hdr.getZxid()));
+                    LOG.info("Creating new log file: log." + Long.toHexString(hdr.getZxid()));
                }
                
-               logFileWrite = new File(logDir, ("log." + 
-                       Long.toHexString(hdr.getZxid())));
+               logFileWrite = new File(logDir, ("log." +  Long.toHexString(hdr.getZxid())));
                fos = new FileOutputStream(logFileWrite);
-               logStream=new BufferedOutputStream(fos);
+               logStream = new BufferedOutputStream(fos);
                oa = BinaryOutputArchive.getArchive(logStream);
                FileHeader fhdr = new FileHeader(TXNLOG_MAGIC,VERSION, dbId);
                fhdr.serialize(oa, "fileheader");
@@ -212,7 +205,10 @@ public class FileTxnLog implements TxnLog {
                currentSize = fos.getChannel().position();
                streamsToFlush.add(fos);
             }
+            
             padFile(fos);
+            
+            // MARK 写入记录: CRC, 事务内容
             byte[] buf = Util.marshallTxnEntry(hdr, txn);
             if (buf == null || buf.length == 0) {
                 throw new IOException("Faulty serialization for header " +
@@ -314,22 +310,22 @@ public class FileTxnLog implements TxnLog {
     }
 
     /**
-     * commit the logs. make sure that evertyhing hits the
-     * disk
+     * commit the logs. make sure that everything hits the disk
      */
     public synchronized void commit() throws IOException {
         if (logStream != null) {
             logStream.flush();
         }
+        
         for (FileOutputStream log : streamsToFlush) {
             log.flush();
+            
             if (forceSync) {
                 long startSyncNS = System.nanoTime();
 
                 log.getChannel().force(false);
 
-                long syncElapsedMS =
-                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startSyncNS);
+                long syncElapsedMS = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startSyncNS);
                 if (syncElapsedMS > fsyncWarningThresholdMS) {
                     LOG.warn("fsync-ing the write ahead log in "
                             + Thread.currentThread().getName()
@@ -339,6 +335,7 @@ public class FileTxnLog implements TxnLog {
                 }
             }
         }
+        
         while (streamsToFlush.size() > 1) {
             streamsToFlush.removeFirst().close();
         }
@@ -354,7 +351,7 @@ public class FileTxnLog implements TxnLog {
         return new FileTxnIterator(logDir, zxid);
     }
 
-    /**
+    /** MARK 按事务ID使用RAF截断当前的事务日志.
      * truncate the current transaction logs
      * @param zxid the zxid to truncate the logs to
      * @return true if successful false if not
@@ -506,8 +503,7 @@ public class FileTxnLog implements TxnLog {
         static final String CRC_ERROR="CRC check failed";
        
         PositionInputStream inputStream=null;
-        //stored files is the list of files greater than
-        //the zxid we are looking for.
+        /** stored files is the list of files greater than the zxid we are looking for. MARK 按名称逆序排列 */
         private ArrayList<File> storedFiles;
 
         /**
@@ -529,7 +525,8 @@ public class FileTxnLog implements TxnLog {
          */
         void init() throws IOException {
             storedFiles = new ArrayList<File>();
-            List<File> files = Util.sortDataDir(FileTxnLog.getLogFiles(logDir.listFiles(), 0), "log", false);
+            List<File> files = Util.sortDataDir(FileTxnLog.getLogFiles(logDir.listFiles(), 0), "log", false); // MARK 降序
+            
             for (File f: files) {
                 if (Util.getZxidFromName(f.getName(), "log") >= zxid) {
                     storedFiles.add(f);
@@ -540,31 +537,34 @@ public class FileTxnLog implements TxnLog {
                     break;
                 }
             }
+            
             goToNextLog();
+            
             if (!next())
                 return;
+            
             while (hdr.getZxid() < zxid) {
                 if (!next())
                     return;
             }
         }
 
-        /**
+        /** MARK 是否有下一个日志文件.
          * go to the next logfile
-         * @return true if there is one and false if there is no
-         * new file to be read
+         * @return true if there is one and false if there is no new file to be read
          * @throws IOException
          */
         private boolean goToNextLog() throws IOException {
             if (storedFiles.size() > 0) {
-                this.logFile = storedFiles.remove(storedFiles.size()-1);
+                this.logFile = storedFiles.remove(storedFiles.size()-1); // 最后一个日志文件
                 ia = createInputArchive(this.logFile);
                 return true;
             }
+            
             return false;
         }
 
-        /**
+        /** MARK 读取(文件)头部
          * read the header from the inputarchive
          * @param ia the inputarchive to be read from
          * @param is the inputstream
@@ -576,8 +576,7 @@ public class FileTxnLog implements TxnLog {
             header.deserialize(ia, "fileheader");
             if (header.getMagic() != FileTxnLog.TXNLOG_MAGIC) {
                 throw new IOException("Transaction log: " + this.logFile + " has invalid magic number " 
-                        + header.getMagic()
-                        + " != " + FileTxnLog.TXNLOG_MAGIC);
+                        + header.getMagic() + " != " + FileTxnLog.TXNLOG_MAGIC);
             }
         }
 
@@ -606,7 +605,7 @@ public class FileTxnLog implements TxnLog {
             return new Adler32();
         }
 
-        /**
+        /** MARK 是否有下一个记录. 副作用: 设置hdr, record
          * the iterator that moves to the next transaction
          * @return true if there is more transactions to be read
          * false if not.
@@ -630,6 +629,7 @@ public class FileTxnLog implements TxnLog {
                     throw new IOException(CRC_ERROR);
                 if (bytes == null || bytes.length == 0)
                     return false;
+                
                 hdr = new TxnHeader();
                 record = SerializeUtils.deserializeTxn(bytes, hdr);
             } catch (EOFException e) {
@@ -649,6 +649,7 @@ public class FileTxnLog implements TxnLog {
                 inputStream.close();
                 throw e;
             }
+            
             return true;
         }
 

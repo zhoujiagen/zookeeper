@@ -32,7 +32,7 @@ import org.apache.zookeeper.server.ByteBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/** MARK 客户端处的连接socket抽象.
  * A ClientCnxnSocket does the lower level communication with a socket
  * implementation.
  * 
@@ -68,6 +68,7 @@ abstract class ClientCnxnSocket {
      */
     protected long sessionId;
 
+    /** MARK socket关联线程和会话ID. */
     void introduce(ClientCnxn.SendThread sendThread, long sessionId) {
         this.sendThread = sendThread;
         this.sessionId = sessionId;

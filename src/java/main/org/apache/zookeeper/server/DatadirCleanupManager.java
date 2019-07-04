@@ -60,14 +60,10 @@ public class DatadirCleanupManager {
      * Constructor of DatadirCleanupManager. It takes the parameters to schedule
      * the purge task.
      * 
-     * @param snapDir
-     *            snapshot directory
-     * @param dataLogDir
-     *            transaction log directory
-     * @param snapRetainCount
-     *            number of snapshots to be retained after purge
-     * @param purgeInterval
-     *            purge interval in hours
+     * @param snapDir snapshot directory
+     * @param dataLogDir transaction log directory
+     * @param snapRetainCount number of snapshots to be retained after purge
+     * @param purgeInterval purge interval in hours
      */
     public DatadirCleanupManager(String snapDir, String dataLogDir, int snapRetainCount,
             int purgeInterval) {

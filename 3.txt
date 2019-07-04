@@ -1,0 +1,82 @@
+08,796 [myid:] - INFO  [main:QuorumPeerConfig@108] - Reading configuration from: conf/quorum/zoo3.cfg
+08,806 [myid:] - INFO  [main:QuorumPeerConfig@344] - Defaulting to majority quorums
+08,809 [myid:3] - INFO  [main:DatadirCleanupManager@74] - autopurge.snapRetainCount set to 3
+08,810 [myid:3] - INFO  [main:DatadirCleanupManager@75] - autopurge.purgeInterval set to 0
+08,812 [myid:3] - INFO  [main:DatadirCleanupManager@97] - Purge task is not scheduled.
+
+08,895 [myid:3] - INFO  [main:QuorumPeerMain@130] - Starting quorum peer
+08,920 [myid:3] - INFO  [main:NIOServerCnxnFactory@97] - binding to port 0.0.0.0/0.0.0.0:2183
+08,933 [myid:3] - DEBUG [main:FileTxnSnapLog@74] - Opening datadir:conf/quorum/data3 snapDir:conf/quorum/data3
+08,936 [myid:3] - INFO  [main:QuorumPeer@901] - tickTime set to 2000
+08,936 [myid:3] - INFO  [main:QuorumPeer@921] - minSessionTimeout set to -1
+08,936 [myid:3] - INFO  [main:QuorumPeer@932] - maxSessionTimeout set to -1
+08,937 [myid:3] - INFO  [main:QuorumPeer@947] - initLimit set to 10
+08,946 [myid:3] - INFO  [main:QuorumPeer@443] - currentEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+08,950 [myid:3] - INFO  [main:QuorumPeer@460] - acceptedEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+
+08,954 [myid:3] - INFO  [Thread-1:QuorumCnxManager$Listener@461] - My election bind port: /127.0.0.1:4445
+
+08,956 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:QuorumPeer@617] - Starting quorum peer
+08,961 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:QuorumPeer@653] - LOOKING
+
+08,961 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:QuorumPeer@587] - Initializing leader election protocol...
+08,963 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@637] - Updating proposal: 3 (newleader), 0x0 (newzxid), -1 (oldleader), 0xffffffffffffffff (oldzxid)
+08,963 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@731] - New election. My id =  3, proposed zxid=0x0
+08,964 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@504] - Sending Notification: 3 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 1 (recipient), 3 (myid), 0x0 (n.peerEpoch)
+08,964 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@504] - Sending Notification: 3 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 2 (recipient), 3 (myid), 0x0 (n.peerEpoch)
+08,964 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@504] - Sending Notification: 3 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 3 (recipient), 3 (myid), 0x0 (n.peerEpoch)
+
+08,965 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager@336] - Opening channel to server 1 at election address /127.0.0.1:2223
+08,969 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager@342] - Connected to server 1 at election address /127.0.0.1:2223, at local address /127.0.0.1:49544
+08,970 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager$SendWorker@545] - Address of remote peer: 1
+
+08,972 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager@336] - Opening channel to server 2 at election address /127.0.0.1:3334
+08,972 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager@342] - Connected to server 2 at election address /127.0.0.1:3334, at local address /127.0.0.1:49545
+08,972 [myid:3] - DEBUG [WorkerSender[myid=3]:QuorumCnxManager$SendWorker@545] - Address of remote peer: 2
+
+08,973 [myid:3] - DEBUG [WorkerReceiver[myid=3]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 3
+08,974 [myid:3] - INFO  [WorkerReceiver[myid=3]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 1 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+
+08,974 [myid:3] - DEBUG [WorkerReceiver[myid=3]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 3
+08,974 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@526] - id: 2, proposed id: 3, zxid: 0x0, proposed zxid: 0x0
+08,974 [myid:3] - INFO  [WorkerReceiver[myid=3]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), FOLLOWING (n.state), 1 (n.sid), 0x1 (n.peerEpoch) LOOKING (my state)
+08,975 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@780] - Adding vote: from=1, proposed leader=2, proposed zxid=0x0, proposed election epoch=0x1
+
+08,975 [myid:3] - DEBUG [WorkerReceiver[myid=3]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 3
+08,975 [myid:3] - INFO  [WorkerReceiver[myid=3]:FastLeaderElection@515] - Notification: 1 (message format version), 3 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 3 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+
+08,975 [myid:3] - DEBUG [WorkerReceiver[myid=3]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 3
+08,975 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@526] - id: 3, proposed id: 3, zxid: 0x0, proposed zxid: 0x0
+08,975 [myid:3] - INFO  [WorkerReceiver[myid=3]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 2 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+08,976 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@780] - Adding vote: from=3, proposed leader=3, proposed zxid=0x0, proposed election epoch=0x1
+
+08,976 [myid:3] - DEBUG [WorkerReceiver[myid=3]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 3
+08,976 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@526] - id: 2, proposed id: 3, zxid: 0x0, proposed zxid: 0x0
+08,976 [myid:3] - INFO  [WorkerReceiver[myid=3]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LEADING (n.state), 2 (n.sid), 0x1 (n.peerEpoch) LOOKING (my state)
+08,976 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@780] - Adding vote: from=2, proposed leader=2, proposed zxid=0x0, proposed election epoch=0x1
+
+08,977 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@659] - I'm a participant: 3
+08,977 [myid:3] - DEBUG [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FastLeaderElection@468] - About to leave FLE instance: leader=2, zxid=0x0, my id=3, my state=FOLLOWING
+08,977 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:QuorumPeer@730] - FOLLOWING
+
+08,980 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Learner@86] - TCP NoDelay set to: true
+08,987 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:zookeeper.version=3.4.6--1, built on 01/15/2019 05:16 GMT
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:host.name=localhost
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.version=1.8.0_172
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.vendor=Oracle Corporation
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home/jre
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.class.path=/Users/zhoujiagen/rtfsc/zookeeper/.eclipse/classes-main:/Users/zhoujiagen/rtfsc/zookeeper/.eclipse/classes-test:/Users/zhoujiagen/.ant/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.6.1.jar:/Users/zhoujiagen/.ant/cache/org.slf4j/slf4j-log4j12/jars/slf4j-log4j12-1.6.1.jar:/Users/zhoujiagen/.ant/cache/log4j/log4j/bundles/log4j-1.2.16.jar:/Users/zhoujiagen/.ant/cache/jline/jline/jars/jline-0.9.94.jar:/Users/zhoujiagen/.ant/cache/io.netty/netty/jars/netty-3.7.0.Final.jar:/Users/zhoujiagen/.ant/cache/junit/junit/jars/junit-4.8.1.jar:/Users/zhoujiagen/.ant/cache/org.mockito/mockito-all/jars/mockito-all-1.8.2.jar:/Users/zhoujiagen/.ant/cache/checkstyle/checkstyle/jars/checkstyle-5.0.jar
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.library.path=/Users/zhoujiagen/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.io.tmpdir=/var/folders/bx/b53q_zf95sx3lwpmqvjdqczc0000gn/T/
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:java.compiler=<NA>
+08,988 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:os.name=Mac OS X
+08,989 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:os.arch=x86_64
+08,989 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:os.version=10.13.3
+08,989 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:user.name=zhoujiagen
+08,989 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:user.home=/Users/zhoujiagen
+08,989 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Environment@100] - Server environment:user.dir=/Users/zhoujiagen/rtfsc/zookeeper
+08,990 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:ZooKeeperServer@163] - Created server with tickTime 2000 minSessionTimeout 4000 maxSessionTimeout 40000 datadir conf/quorum/data3/version-2 snapdir conf/quorum/data3/version-2
+08,991 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Follower@64] - FOLLOWING - LEADER ELECTION TOOK - 28
+
+08,997 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:Learner@324] - Getting a snapshot from leader
+09,001 [myid:3] - INFO  [QuorumPeer[myid=3]/0:0:0:0:0:0:0:0:2183:FileTxnSnapLog@235] - Snapshotting: 0x100000000 to conf/quorum/data3/version-2/snapshot.100000000

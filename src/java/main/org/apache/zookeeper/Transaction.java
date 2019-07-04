@@ -21,7 +21,7 @@ import org.apache.zookeeper.data.ACL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+/** MARK 多操作的事务抽象.
  * Provides a builder style interface for doing multiple updates.  This is
  * really just a thin layer on top of Zookeeper.multi().
  *

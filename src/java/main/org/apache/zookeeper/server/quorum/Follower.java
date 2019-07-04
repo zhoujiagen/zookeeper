@@ -33,7 +33,8 @@ import org.apache.zookeeper.txn.TxnHeader;
  */
 public class Follower extends Learner{
 
-    private long lastQueued;
+    private long lastQueued; // MARK zxid of the last proposal in the history
+    
     // This is the same object as this.zk, but we cache the downcast op
     final FollowerZooKeeperServer fzk;
     
@@ -68,7 +69,7 @@ public class Follower extends Learner{
         try {
             InetSocketAddress addr = findLeader();            
             try {
-                connectToLeader(addr);
+                connectToLeader(addr);    // MARK 连接到leader
                 long newEpochZxid = registerWithLeader(Leader.FOLLOWERINFO);
 
                 //check to see if the leader zxid is lower than ours

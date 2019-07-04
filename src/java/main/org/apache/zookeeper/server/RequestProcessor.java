@@ -18,7 +18,7 @@
 
 package org.apache.zookeeper.server;
 
-/**
+/** MARK 请求处理器.
  * RequestProcessors are chained together to process transactions. Requests are
  * always processed in order. The standalone server, follower, and leader all
  * have slightly different RequestProcessors chained together.

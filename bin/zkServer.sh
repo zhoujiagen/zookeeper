@@ -36,10 +36,11 @@ then
     # for some reason these two options are necessary on jdk6 on Ubuntu
     #   accord to the docs they are not necessary, but otw jconsole cannot
     #   do a local attach
-    ZOOMAIN="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=$JMXLOCALONLY org.apache.zookeeper.server.quorum.QuorumPeerMain"
+    ZOOMAIN="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=$JMXLOCALONLY -Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory org.apache.zookeeper.server.quorum.QuorumPeerMain"
 else
     echo "JMX disabled by user request" >&2
-    ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
+    # MARK 启用入口
+    ZOOMAIN="-Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory org.apache.zookeeper.server.quorum.QuorumPeerMain"
 fi
 
 # use POSTIX interface, symlink is followed automatically

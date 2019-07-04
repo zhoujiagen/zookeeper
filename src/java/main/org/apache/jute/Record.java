@@ -20,7 +20,7 @@ package org.apache.jute;
 
 import java.io.IOException;
 
-/**
+/** MARK 序列化记录基类.
  * Interface that is implemented by generated classes.
  * 
  */

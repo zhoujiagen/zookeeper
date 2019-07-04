@@ -39,20 +39,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class ServerCnxnFactory {
-
+    Logger LOG = LoggerFactory.getLogger(ServerCnxnFactory.class);
+  
     public static final String ZOOKEEPER_SERVER_CNXN_FACTORY = "zookeeper.serverCnxnFactory";
 
     public interface PacketProcessor {
         public void processPacket(ByteBuffer packet, ServerCnxn src);
     }
     
-    Logger LOG = LoggerFactory.getLogger(ServerCnxnFactory.class);
-
-    /**
-     * The buffer will cause the connection to be close when we do a send.
-     */
+    /** The buffer will cause the connection to be close when we do a send. */
     static final ByteBuffer closeConn = ByteBuffer.allocate(0);
 
+    protected SaslServerCallbackHandler saslServerCallbackHandler;
+    public Login login;
+    
+    protected ZooKeeperServer zkServer;
+    
+    private final Map<ServerCnxn, ConnectionBean> connectionBeans = new ConcurrentHashMap<ServerCnxn, ConnectionBean>();
+    protected final HashSet<ServerCnxn> cnxns = new HashSet<ServerCnxn>();
+    
     public abstract int getLocalPort();
     
     public abstract Iterable<ServerCnxn> getConnections();
@@ -67,9 +72,6 @@ public abstract class ServerCnxnFactory {
 
     public abstract void configure(InetSocketAddress addr,
                                    int maxClientCnxns) throws IOException;
-
-    protected SaslServerCallbackHandler saslServerCallbackHandler;
-    public Login login;
 
     /** Maximum number of connections allowed from particular host (ip) */
     public abstract int getMaxClientCnxnsPerHost();
@@ -86,7 +88,6 @@ public abstract class ServerCnxnFactory {
 
     public abstract void start();
 
-    protected ZooKeeperServer zkServer;
     final public void setZooKeeperServer(ZooKeeperServer zk) {
         this.zkServer = zk;
         if (zk != null) {
@@ -129,10 +130,6 @@ public abstract class ServerCnxnFactory {
 
     public abstract InetSocketAddress getLocalAddress();
 
-    private final Map<ServerCnxn, ConnectionBean> connectionBeans
-        = new ConcurrentHashMap<ServerCnxn, ConnectionBean>();
-
-    protected final HashSet<ServerCnxn> cnxns = new HashSet<ServerCnxn>();
     public void unregisterConnection(ServerCnxn serverCnxn) {
         ConnectionBean jmxConnectionBean = connectionBeans.remove(serverCnxn);
         if (jmxConnectionBean != null){

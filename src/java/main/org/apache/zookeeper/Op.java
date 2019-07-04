@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-/**
+/** MARK 多操作的事务中的单个操作.
  * Represents a single operation in a multi-operation transaction.  Each operation can be a create, update
  * or delete or can just be a version check.
  *

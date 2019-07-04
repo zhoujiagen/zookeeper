@@ -53,8 +53,7 @@ public class Util {
     private static final String DB_FORMAT_CONV="dbFormatConversion";
     private static final ByteBuffer fill = ByteBuffer.allocateDirect(1);
     
-    public static String makeURIString(String dataDir, String dataLogDir, 
-            String convPolicy){
+    public static String makeURIString(String dataDir, String dataLogDir, String convPolicy){
         String uri="file:"+SNAP_DIR+"="+dataDir+";"+LOG_DIR+"="+dataLogDir;
         if(convPolicy!=null)
             uri+=";"+DB_FORMAT_CONV+"="+convPolicy;
@@ -78,7 +77,7 @@ public class Util {
         return URI.create(makeURIString(dataDir.getPath(),dataLogDir.getPath(),convPolicy));
     }
 
-    /**
+    /** MARK 创建日志文件名
      * Creates a valid transaction log file name. 
      * 
      * @param zxid used as a file name suffix (extention)
@@ -88,7 +87,7 @@ public class Util {
         return "log." + Long.toHexString(zxid);
     }
 
-    /**
+    /** MARK 创建快照文件名
      * Creates a snapshot file name.
      * 
      * @param zxid used as a suffix
@@ -148,7 +147,7 @@ public class Util {
         return zxid;
     }
 
-    /**
+    /** MARK 验证是否是有效的快照文件.
      * Verifies that the file is a valid snapshot. Snapshot may be invalid if 
      * it's incomplete as in a situation when the server dies while in the process
      * of storing a snapshot. Any file that is not a snapshot is also 
@@ -159,18 +158,22 @@ public class Util {
      * @throws IOException
      */
     public static boolean isValidSnapshot(File f) throws IOException {
-        if (f==null || Util.getZxidFromName(f.getName(), "snapshot") == -1)
+        if (f == null || Util.getZxidFromName(f.getName(), "snapshot") == -1)
             return false;
 
         // Check for a valid snapshot
         RandomAccessFile raf = new RandomAccessFile(f, "r");
         try {
+            // MARK 最少10字节: 头 + 尾
             // including the header and the last / bytes
-            // the snapshot should be atleast 10 bytes
+            // the snapshot should be at least 10 bytes
             if (raf.length() < 10) {
                 return false;
             }
+            
+            // MARK 最后5个字节是: 4字节长度(Integer), '/'
             raf.seek(raf.length() - 5);
+            
             byte bytes[] = new byte[5];
             int readlen = 0;
             int l;
@@ -179,16 +182,15 @@ public class Util {
                 readlen += l;
             }
             if (readlen != bytes.length) {
-                LOG.info("Invalid snapshot " + f
-                        + " too short, len = " + readlen);
+                LOG.info("Invalid snapshot " + f + " too short, len = " + readlen);
                 return false;
             }
+            
             ByteBuffer bb = ByteBuffer.wrap(bytes);
             int len = bb.getInt();
             byte b = bb.get();
             if (len != 1 || b != '/') {
-                LOG.info("Invalid snapshot " + f + " len = " + len
-                        + " byte = " + (b & 0xff));
+                LOG.info("Invalid snapshot " + f + " len = " + len + " byte = " + (b & 0xff));
                 return false;
             }
         } finally {
@@ -198,25 +200,22 @@ public class Util {
         return true;
     }
 
-    /**
+    /** MARK 扩充文件大小: 在当前位置与文件尾不足4KB时.
      * Grows the file to the specified number of bytes. This only happenes if 
-     * the current file position is sufficiently close (less than 4K) to end of 
-     * file. 
+     * the current file position is sufficiently close (less than 4K) to end of  file. 
      * 
      * @param f output stream to pad
-     * @param currentSize application keeps track of the cuurent file size
+     * @param currentSize application keeps track of the current file size
      * @param preAllocSize how many bytes to pad
-     * @return the new file size. It can be the same as currentSize if no
-     * padding was done.
+     * @return the new file size. It can be the same as currentSize if no padding was done.
      * @throws IOException
      */
-    public static long padLogFile(FileOutputStream f,long currentSize,
-            long preAllocSize) throws IOException{
+    public static long padLogFile(FileOutputStream f,long currentSize, long preAllocSize) throws IOException{
         long position = f.getChannel().position();
         if (position + 4096 >= currentSize) {
             currentSize = currentSize + preAllocSize;
             fill.position(0);
-            f.getChannel().write(fill, currentSize-fill.remaining());
+            f.getChannel().write(fill, currentSize-fill.remaining()); // MARK 尾部写个字节
         }
         return currentSize;
     }
@@ -253,8 +252,7 @@ public class Util {
      * @return serialized transaction record
      * @throws IOException
      */
-    public static byte[] marshallTxnEntry(TxnHeader hdr, Record txn)
-            throws IOException {
+    public static byte[] marshallTxnEntry(TxnHeader hdr, Record txn) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputArchive boa = BinaryOutputArchive.getArchive(baos);
 
@@ -272,8 +270,7 @@ public class Util {
      * @param bytes serialized trasnaction record
      * @throws IOException
      */
-    public static void writeTxnBytes(OutputArchive oa, byte[] bytes)
-            throws IOException {
+    public static void writeTxnBytes(OutputArchive oa, byte[] bytes) throws IOException {
         oa.writeBuffer(bytes, "txnEntry");
         oa.writeByte((byte) 0x42, "EOR"); // 'B'
     }
@@ -283,8 +280,7 @@ public class Util {
      * Compare file file names of form "prefix.version". Sort order result
      * returned in order of version.
      */
-    private static class DataDirFileComparator
-        implements Comparator<File>, Serializable
+    private static class DataDirFileComparator implements Comparator<File>, Serializable
     {
         private static final long serialVersionUID = -2648639884525140318L;
 

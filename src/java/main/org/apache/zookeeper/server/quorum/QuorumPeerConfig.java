@@ -42,39 +42,44 @@ import org.apache.zookeeper.server.quorum.flexible.QuorumHierarchical;
 import org.apache.zookeeper.server.quorum.flexible.QuorumMaj;
 import org.apache.zookeeper.server.quorum.flexible.QuorumVerifier;
 
+/** MARK quorum server的配置. 
+ * REF: https://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_configuration
+ */
 public class QuorumPeerConfig {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumPeerConfig.class);
 
-    protected InetSocketAddress clientPortAddress;
-    protected String dataDir;
-    protected String dataLogDir;
-    protected int tickTime = ZooKeeperServer.DEFAULT_TICK_TIME;
-    protected int maxClientCnxns = 60;
+    protected InetSocketAddress clientPortAddress;                             // MARK 监听客户端连接的IP和端口
+    protected String dataDir;                                                  // MARK 内存中数据快照 (和数据库更新事务日志)
+    protected String dataLogDir;                                               // MARK 数据库更新事务日志(默认为dataDir)
+    protected int tickTime = ZooKeeperServer.DEFAULT_TICK_TIME;                // MARK 基本时间单位: 管理心跳和超时
+    protected int maxClientCnxns = 60;                                         // MARK 单个客户端的并发连接最大数量
     /** defaults to -1 if not set explicitly */
-    protected int minSessionTimeout = -1;
+    protected int minSessionTimeout = -1;                                      // MARK 最小会话超时时间, 默认(最小)为2 * tickTime
     /** defaults to -1 if not set explicitly */
-    protected int maxSessionTimeout = -1;
+    protected int maxSessionTimeout = -1;                                      // MARK 最大会话超时时间, 默认未20 * tickTime
 
-    protected int initLimit;
-    protected int syncLimit;
-    protected int electionAlg = 3;
-    protected int electionPort = 2182;
-    protected boolean quorumListenOnAllIPs = false;
-    protected final HashMap<Long,QuorumServer> servers =
+    // The number of ticks that the initial synchronization phase can take
+    protected int initLimit;                                                   // MARK 允许follower与leader连接和同步的时间
+    // The number of ticks that can pass between sending a request and getting an acknowledgement
+    protected int syncLimit;                                                   // MARK 允许follower同步的时间
+    protected int electionAlg = 3;                                             // MARK 选举算法标识
+    protected int electionPort = 2182;                                         // MARK 选举用端口
+    protected boolean quorumListenOnAllIPs = false;                            // MARK server是监听所有可用IP, 还是仅监听配置中的服务器列表
+    protected final HashMap<Long,QuorumServer> servers =                       // MARK participant; server.id => server
         new HashMap<Long, QuorumServer>();
-    protected final HashMap<Long,QuorumServer> observers =
+    protected final HashMap<Long,QuorumServer> observers =                     // MARK observer; service.id => server
         new HashMap<Long, QuorumServer>();
 
-    protected long serverId;
+    protected long serverId;                                                   // MARK 
     protected HashMap<Long, Long> serverWeight = new HashMap<Long, Long>();
     protected HashMap<Long, Long> serverGroup = new HashMap<Long, Long>();
-    protected int numGroups = 0;
-    protected QuorumVerifier quorumVerifier;
-    protected int snapRetainCount = 3;
-    protected int purgeInterval = 0;
-    protected boolean syncEnabled = true;
+    protected int numGroups = 0;                                               // MARK 
+    protected QuorumVerifier quorumVerifier;                                   // MARK quorum层次: server分组
+    protected int snapRetainCount = 3;                                         // MARK 快照保留数量
+    protected int purgeInterval = 0;                                           // MARK 清理任务周期, 单位: 小时
+    protected boolean syncEnabled = true;                                      // MARK observer是否记录事务日志和执行快照
 
-    protected LearnerType peerType = LearnerType.PARTICIPANT;
+    protected LearnerType peerType = LearnerType.PARTICIPANT;                  // MARK learner类型: 参与者, 观察者
     
     /**
      * Minimum snapshot retain count.
@@ -159,9 +164,9 @@ public class QuorumPeerConfig {
                 syncLimit = Integer.parseInt(value);
             } else if (key.equals("electionAlg")) {
                 electionAlg = Integer.parseInt(value);
-            } else if (key.equals("quorumListenOnAllIPs")) {
+            } else if (key.equals("quorumListenOnAllIPs")) {                            // MARK 是否监听所有地址, 而不仅是配置文件中的地址
                 quorumListenOnAllIPs = Boolean.parseBoolean(value);
-            } else if (key.equals("peerType")) {
+            } else if (key.equals("peerType")) {                                        // MARK peer类型: 默认为LearnerType.PARTICIPANT
                 if (value.toLowerCase().equals("observer")) {
                     peerType = LearnerType.OBSERVER;
                 } else if (value.toLowerCase().equals("participant")) {
@@ -176,8 +181,8 @@ public class QuorumPeerConfig {
                 snapRetainCount = Integer.parseInt(value);
             } else if (key.equals("autopurge.purgeInterval")) {
                 purgeInterval = Integer.parseInt(value);
-            } else if (key.startsWith("server.")) {
-                int dot = key.indexOf('.');
+            } else if (key.startsWith("server.")) { // MARK 构成ensemble服务器列表: [hostname]:nnnnn[:nnnnn]
+                int dot = key.indexOf('.'); // MARK hostname : port followers use to connect to the leader : leader election port
                 long sid = Long.parseLong(key.substring(dot + 1));
                 String parts[] = value.split(":");
                 if ((parts.length != 2) && (parts.length != 3) && (parts.length !=4)) {
@@ -187,14 +192,14 @@ public class QuorumPeerConfig {
                 }
                 InetSocketAddress addr = new InetSocketAddress(parts[0],
                         Integer.parseInt(parts[1]));
-                if (parts.length == 2) {
+                if (parts.length == 2) {                                                // MARK sid, addr, PARTICIPANT
                     servers.put(Long.valueOf(sid), new QuorumServer(sid, addr));
-                } else if (parts.length == 3) {
+                } else if (parts.length == 3) {                                         // MARK sid, addr, electionAddr, PARTICIPANT
                     InetSocketAddress electionAddr = new InetSocketAddress(
                             parts[0], Integer.parseInt(parts[2]));
                     servers.put(Long.valueOf(sid), new QuorumServer(sid, addr,
                             electionAddr));
-                } else if (parts.length == 4) {
+                } else if (parts.length == 4) {                                         // MARK sid, addr, electionAddr, type
                     InetSocketAddress electionAddr = new InetSocketAddress(
                             parts[0], Integer.parseInt(parts[2]));
                     LearnerType type = LearnerType.PARTICIPANT;
@@ -258,8 +263,7 @@ public class QuorumPeerConfig {
             throw new IllegalArgumentException("clientPort is not set");
         }
         if (clientPortAddress != null) {
-            this.clientPortAddress = new InetSocketAddress(
-                    InetAddress.getByName(clientPortAddress), clientPort);
+            this.clientPortAddress = new InetSocketAddress(InetAddress.getByName(clientPortAddress), clientPort);
         } else {
             this.clientPortAddress = new InetSocketAddress(clientPort);
         }
@@ -359,7 +363,7 @@ public class QuorumPeerConfig {
             }
             try {
                 serverId = Long.parseLong(myIdString);
-                MDC.put("myid", myIdString);
+                MDC.put("myid", myIdString); // MARK 使用log4j的MDC
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("serverid " + myIdString
                         + " is not a number");

@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+// MARK 数据定义
 module org.apache.zookeeper.data {
     class Id {
         ustring scheme;
@@ -26,18 +27,20 @@ module org.apache.zookeeper.data {
         Id id;
     }
     // information shared with the client
+    // REF: https://zookeeper.apache.org/doc/current/zookeeperProgrammers.html#sc_zkStatStructure
     class Stat {
-        long czxid;      // created zxid
-        long mzxid;      // last modified zxid
-        long ctime;      // created
-        long mtime;      // last modified
-        int version;     // version
-        int cversion;    // child version
-        int aversion;    // acl version
-        long ephemeralOwner; // owner id if ephemeral, 0 otw
-        int dataLength;  //length of the data in the node
-        int numChildren; //number of children of this node
-        long pzxid;      // last modified children
+        long czxid;      		// created zxid: The zxid of the change that caused this znode to be created.
+        long mzxid;      		// last modified zxid: The zxid of the change that last modified this znode.
+        long ctime;      		// created: The time in milliseconds from epoch when this znode was created.
+        long mtime;      		// last modified: The time in milliseconds from epoch when this znode was last modified.
+        int version;     		// version: The number of changes to the data of this znode.
+        int cversion;    		// child version: The number of changes to the children of this znode.
+        int aversion;   	 	// acl version: The number of changes to the ACL of this znode.
+        long ephemeralOwner;	// owner id if ephemeral, 0 otw: The session id of the owner of this znode if the znode is an ephemeral node.
+        					 	// If it is not an ephemeral node, it will be zero.
+        int dataLength;  		// length of the data in the node
+        int numChildren; 		// number of children of this node
+        long pzxid;      		// last modified children: The zxid of the change that last modified children of this znode.
     }
     // information explicitly stored by the server persistently
     class StatPersisted {
@@ -65,48 +68,58 @@ module org.apache.zookeeper.data {
     }
 }
 
+// MARK 协议请求响应定义
 module org.apache.zookeeper.proto {
-    class ConnectRequest {
+    class ConnectRequest {			// MARK 协议请求: 连接
         int protocolVersion;
         long lastZxidSeen;
         int timeOut;
-        long sessionId;
+        long sessionId; // MARK 为0时会创建会话, 非0时重打开会话
         buffer passwd;
     }
-    class ConnectResponse {
+    class ConnectResponse { 
         int protocolVersion;
         int timeOut;
         long sessionId;
         buffer passwd;
     }
-    class SetWatches {
+    class SetWatches {				// MARK 协议请求: 设置watch
         long relativeZxid;
         vector<ustring>dataWatches;
         vector<ustring>existWatches;
         vector<ustring>childWatches;
     }        
-    class RequestHeader {
+    class WatcherEvent {			// MARK 协议请求: watcher事件
+        int type;  // event type
+        int state; // state of the Keeper client runtime
+        ustring path;
+    }
+    class RequestHeader {			// MARK 协议请求: 请求头部
         int xid;
         int type;
     }
-    class MultiHeader {
+    class MultiHeader {				// MARK 协议请求: 多操作请求头部
         int type;
         boolean done;
         int err;
     }
-    class AuthPacket {
+    class AuthPacket {				// MARK 协议请求: 验证包
         int type;
         ustring scheme;
         buffer auth;
     }
-    class ReplyHeader {
+    class ReplyHeader {				// MARK 协议请求: 回复头部
         int xid;
         long zxid;
         int err;
     }
-    class GetDataRequest {
+    class GetDataRequest {			// MARK 协议请求: 获取/设置数据请求
         ustring path;
         boolean watch;
+    }
+    class GetDataResponse {
+        buffer data;
+        org.apache.zookeeper.data.Stat stat;
     }
     class SetDataRequest {
         ustring path;
@@ -116,7 +129,7 @@ module org.apache.zookeeper.proto {
     class SetDataResponse {
         org.apache.zookeeper.data.Stat stat;
     }
-    class GetSASLRequest {
+    class GetSASLRequest {			// MARK 协议请求: 获取/设置SASL请求
         buffer token;
     }
     class SetSASLRequest {
@@ -125,29 +138,39 @@ module org.apache.zookeeper.proto {
     class SetSASLResponse {
         buffer token;
     }
-    class CreateRequest {
+    class CreateRequest {			// MARK 协议请求: 创建节点请求
         ustring path;
         buffer data;
         vector<org.apache.zookeeper.data.ACL> acl;
         int flags;
     }
-    class DeleteRequest {
+    class CreateResponse {
+        ustring path;
+    }    
+    class DeleteRequest {			// MARK 协议请求: 删除节点请求
         ustring path;
         int version;
     }
-    class GetChildrenRequest {
+    class GetChildrenRequest {		// MARK 协议请求: 获取子节点请求
         ustring path;
         boolean watch;
     }
+    class GetChildrenResponse {
+        vector<ustring> children;
+    }    
     class GetChildren2Request {
         ustring path;
         boolean watch;
     }
-    class CheckVersionRequest {
+    class GetChildren2Response {
+        vector<ustring> children;
+        org.apache.zookeeper.data.Stat stat;
+    }
+    class CheckVersionRequest {		// MARK 协议请求: 检查版本请求
         ustring path;
         int version;
     }
-    class GetMaxChildrenRequest {
+    class GetMaxChildrenRequest {	// MARK 协议请求: 获取/设置最大子节点数量请求
         ustring path;
     }
     class GetMaxChildrenResponse {
@@ -157,15 +180,19 @@ module org.apache.zookeeper.proto {
         ustring path;
         int max;
     }
-    class SyncRequest {
+    class SyncRequest {				// MARK 协议请求: 同步请求
         ustring path;
     }
     class SyncResponse {
         ustring path;
     }
-    class GetACLRequest {
+    class GetACLRequest {			// MARK 协议请求: 获取/设置ACL请求
         ustring path;
     }
+    class GetACLResponse {
+        vector<org.apache.zookeeper.data.ACL> acl;
+        org.apache.zookeeper.data.Stat stat;
+    }    
     class SetACLRequest {
         ustring path;
         vector<org.apache.zookeeper.data.ACL> acl;
@@ -174,54 +201,38 @@ module org.apache.zookeeper.proto {
     class SetACLResponse {
         org.apache.zookeeper.data.Stat stat;
     }
-    class WatcherEvent {
-        int type;  // event type
-        int state; // state of the Keeper client runtime
-        ustring path;
-    }
-    class ErrorResponse {
+    class ErrorResponse {			// MARK 协议请求: 错误响应
         int err;
     }
-    class CreateResponse {
-        ustring path;
-    }
-    class ExistsRequest {
+    class ExistsRequest {			// MARK 协议请求: exists请求
         ustring path;
         boolean watch;
     }
     class ExistsResponse {
         org.apache.zookeeper.data.Stat stat;
     }
-    class GetDataResponse {
-        buffer data;
-        org.apache.zookeeper.data.Stat stat;
-    }
-    class GetChildrenResponse {
-        vector<ustring> children;
-    }
-    class GetChildren2Response {
-        vector<ustring> children;
-        org.apache.zookeeper.data.Stat stat;
-    }
-    class GetACLResponse {
-        vector<org.apache.zookeeper.data.ACL> acl;
-        org.apache.zookeeper.data.Stat stat;
-    }
 }
 
+// MARK 服务器群体信息定义
+// MARK https://cwiki.apache.org/confluence/display/ZOOKEEPER/Zab1.0
 module org.apache.zookeeper.server.quorum {
+    // MARK used for the initial handshake between client and server
     class LearnerInfo {
         long serverid;
         int protocolVersion;
     }
+    
+    // MARK actual proposals communicated between follower and leader
     class QuorumPacket {
-        int type; // Request, Ack, Commit, Ping
+    	// 定义于org.apache.zookeeper.server.quorum.Leader, 见https://cwiki.apache.org/confluence/display/ZOOKEEPER/Zab1.0
+        int type; 		// Request, Ack, Commit, Ping
         long zxid;
-        buffer data; // Only significant when type is request
+        buffer data; 	// Only significant when type is request
         vector<org.apache.zookeeper.data.Id> authinfo;
     }
 }
 
+// MARK 服务器持久化信息定义
 module org.apache.zookeeper.server.persistence {
     class FileHeader {
         int magic;
@@ -230,8 +241,8 @@ module org.apache.zookeeper.server.persistence {
     }
 }
 
-module org.apache.zookeeper.txn {
-    class TxnHeader {
+module org.apache.zookeeper.txn { // MARK 事务定义
+    class TxnHeader { 			// MARK 事务头部
         long clientId;
         int cxid;
         long zxid;
@@ -244,45 +255,45 @@ module org.apache.zookeeper.txn {
         vector<org.apache.zookeeper.data.ACL> acl;
         boolean ephemeral;
     }
-    class CreateTxn {
+    class CreateTxn { 			// MARK 创建节点的事务
         ustring path;
         buffer data;
         vector<org.apache.zookeeper.data.ACL> acl;
         boolean ephemeral;
         int parentCVersion;
     }
-    class DeleteTxn {
+    class DeleteTxn { 			// MARK 删除节点的事务
         ustring path;
     }
-    class SetDataTxn {
+    class SetDataTxn { 			// MARK 设置节点数据的事务
         ustring path;
         buffer data;
         int version;
     }
-    class CheckVersionTxn {
+    class CheckVersionTxn { 	// MARK 检查节点版本的事务
         ustring path;
         int version;
     }
-    class SetACLTxn {
+    class SetACLTxn { 			// MARK 设置节点ACL的事务
         ustring path;
         vector<org.apache.zookeeper.data.ACL> acl;
         int version;
     }
-    class SetMaxChildrenTxn {
+    class SetMaxChildrenTxn { 	// MARK 设置最大子节点数量的事务
         ustring path;
         int max;
     }
-    class CreateSessionTxn {
+    class CreateSessionTxn { 	// MARK 创建会话的事务
         int timeOut;
     }
-    class ErrorTxn {
+    class ErrorTxn { 			// MARK 记录发生错误的事务
         int err;
     }
-    class Txn {
+    class Txn { 				// MARK 事务
         int type;
         buffer data;
     }
-    class MultiTxn {
+    class MultiTxn { 			// MARK 多操作事务
         vector<org.apache.zookeeper.txn.Txn> txns;
     }
 }

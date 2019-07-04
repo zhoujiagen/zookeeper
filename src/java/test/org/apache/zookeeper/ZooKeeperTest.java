@@ -42,6 +42,8 @@ public class ZooKeeperTest extends ClientBase {
     public void testDeleteRecursive() throws IOException, InterruptedException,
             KeeperException {
         final ZooKeeper zk = createClient();
+        // MARK 连接实际的quorum
+        // final ZooKeeper zk = new ZooKeeper("127.0.0.1:2181", 15000, null);
         // making sure setdata works on /
         zk.setData("/", "some".getBytes(), -1);
         zk.create("/a", "some".getBytes(), Ids.OPEN_ACL_UNSAFE,

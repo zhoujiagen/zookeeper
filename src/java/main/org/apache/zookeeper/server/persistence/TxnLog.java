@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.apache.jute.Record;
 import org.apache.zookeeper.txn.TxnHeader;
 
-/**
+/** MARK 读取事务日志接口.
  * Interface for reading transaction logs.
  *
  */
@@ -76,9 +76,8 @@ public interface TxnLog {
      */
     long getDbId() throws IOException;
     
-    /**
-     * commmit the trasaction and make sure
-     * they are persisted
+    /** MARK 提交事务, 并确保持久化到磁盘上.
+     * commmit the trasaction and make sure they are persisted
      * @throws IOException
      */
     void commit() throws IOException;
@@ -87,7 +86,8 @@ public interface TxnLog {
      * close the transactions logs
      */
     void close() throws IOException;
-    /**
+    
+    /** MARK 事务日志迭代器.
      * an iterating interface for reading 
      * transaction logs. 
      */

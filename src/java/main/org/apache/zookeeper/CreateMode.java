@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.zookeeper.KeeperException;
 
-/***
+/*** MARK znode创建模式.
  *  CreateMode value determines how the znode is created on ZooKeeper.
  */
 public enum CreateMode {

@@ -41,7 +41,7 @@ import java.util.*;
  * service, an application must first instantiate an object of ZooKeeper class.
  * All the iterations will be done by calling the methods of ZooKeeper class.
  * The methods of this class are thread-safe unless otherwise noted.
- * <p>
+ * <p> MARK 会话
  * Once a connection to a server is established, a session ID is assigned to the
  * client. The client will send heart beats to the server periodically to keep
  * the session valid.
@@ -54,18 +54,18 @@ import java.util.*;
  * the server will expire the session, and the session ID will become invalid.
  * The client object will no longer be usable. To make ZooKeeper API calls, the
  * application must create a new client object.
- * <p>
+ * <p> MARK 重连
  * If the ZooKeeper server the client currently connects to fails or otherwise
  * does not respond, the client will automatically try to connect to another
  * server before its session ID expires. If successful, the application can
  * continue to use the client.
- * <p>
+ * <p> MARK 同步/异步API
  * The ZooKeeper API methods are either synchronous or asynchronous. Synchronous
  * methods blocks until the server has responded. Asynchronous methods just queue
  * the request for sending and return immediately. They take a callback object that
  * will be executed either on successful execution of the request or on error with
  * an appropriate return code (rc) indicating the error.
- * <p>
+ * <p> MARK watch
  * Some successful ZooKeeper API calls can leave watches on the "data nodes" in
  * the ZooKeeper server. Other successful ZooKeeper API calls can trigger those
  * watches. Once a watch is triggered, an event will be delivered to the client
@@ -229,9 +229,7 @@ public class ZooKeeper {
         }
     }
 
-    /**
-     * Register a watcher for a particular path.
-     */
+    /** MARK watch注册请求. Register a watcher for a particular path. */
     abstract class WatchRegistration {
         private Watcher watcher;
         private String clientPath;
@@ -313,9 +311,22 @@ public class ZooKeeper {
         }
     }
 
+    /** 句柄状态. */
     public enum States {
-        CONNECTING, ASSOCIATING, CONNECTED, CONNECTEDREADONLY,
-        CLOSED, AUTH_FAILED, NOT_CONNECTED;
+        /** 连接中. */
+        CONNECTING, 
+        /** 关联中??? */
+        ASSOCIATING, 
+        /** 已连接. */
+        CONNECTED, 
+        /** 已连接, 只读. */
+        CONNECTEDREADONLY,
+        /** 已关闭. */
+        CLOSED, 
+        /** 已认证失败. */
+        AUTH_FAILED, 
+        /** 未连接. */
+        NOT_CONNECTED;
 
         public boolean isAlive() {
             return this != CLOSED && this != AUTH_FAILED;
@@ -403,7 +414,7 @@ public class ZooKeeper {
      * connection string. This will run the client commands while interpreting
      * all paths relative to this root (similar to the unix chroot command).
      *
-     * @param connectString
+     * @param connectString MARK 连接字符串
      *            comma separated host:port pairs, each corresponding to a zk
      *            server. e.g. "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002" If
      *            the optional chroot suffix is used the example would look
@@ -589,7 +600,7 @@ public class ZooKeeper {
                 hostProvider, sessionTimeout, this, watchManager,
                 getClientCnxnSocket(), sessionId, sessionPasswd, canBeReadOnly);
         cnxn.seenRwServerBefore = true; // since user has provided sessionId
-        cnxn.start();
+        cnxn.start(); // MARK 启动客户端连接动作
     }
 
     /**
@@ -1150,7 +1161,7 @@ public class ZooKeeper {
         request.setPath(serverPath);
         request.setWatch(watcher != null);
         GetDataResponse response = new GetDataResponse();
-        ReplyHeader r = cnxn.submitRequest(h, request, response, wcb);
+        ReplyHeader r = cnxn.submitRequest(h, request, response, wcb);  // MARK 提交请求
         if (r.getErr() != 0) {
             throw KeeperException.create(KeeperException.Code.get(r.getErr()),
                     clientPath);

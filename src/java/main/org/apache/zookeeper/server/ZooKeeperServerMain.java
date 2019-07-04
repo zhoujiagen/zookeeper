@@ -29,7 +29,7 @@ import org.apache.zookeeper.jmx.ManagedUtil;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-/**
+/** MARK standalone方式运行的server.
  * This class starts and runs a standalone ZooKeeperServer.
  */
 public class ZooKeeperServerMain {

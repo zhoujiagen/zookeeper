@@ -45,11 +45,15 @@ import org.apache.zookeeper.txn.SetDataTxn;
 import org.apache.zookeeper.txn.TxnHeader;
 import org.apache.zookeeper.txn.MultiTxn;
 
+/** MARK 序列化工具类. */
 public class SerializeUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SerializeUtils.class);
     
-    public static Record deserializeTxn(byte txnBytes[], TxnHeader hdr)
-            throws IOException {
+    /** MARK 反序列化事务. 
+     * @param txnBytes header + txn body
+     * @param hdr OUT参数
+     */
+    public static Record deserializeTxn(byte txnBytes[], TxnHeader hdr) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(txnBytes);
         InputArchive ia = BinaryInputArchive.getArchive(bais);
 
@@ -85,9 +89,10 @@ public class SerializeUtils {
         default:
             throw new IOException("Unsupported Txn with type=%d" + hdr.getType());
         }
+        
         if (txn != null) {
             try {
-                txn.deserialize(ia, "txn");
+                txn.deserialize(ia, "txn");     // MARK 各事务分别反序列化
             } catch(EOFException e) {
                 // perhaps this is a V0 Create
                 if (hdr.getType() == OpCode.create) {
@@ -107,28 +112,34 @@ public class SerializeUtils {
                 }
             }
         }
+        
         return txn;
     }
 
-    public static void deserializeSnapshot(DataTree dt,InputArchive ia,
-            Map<Long, Integer> sessions) throws IOException {
+    /** MARK 反序列化快照: count, [id, timeout], tree. 
+     * @param dt OUT参数
+     * @param ia
+     * @param sessions OUT参数
+     */
+    public static void deserializeSnapshot(DataTree dt,InputArchive ia, Map<Long, Integer> sessions) throws IOException {
         int count = ia.readInt("count");
+        
         while (count > 0) {
             long id = ia.readLong("id");
             int to = ia.readInt("timeout");
             sessions.put(id, to);
             if (LOG.isTraceEnabled()) {
                 ZooTrace.logTraceMessage(LOG, ZooTrace.SESSION_TRACE_MASK,
-                        "loadData --- session in archive: " + id
-                        + " with timeout: " + to);
+                        "loadData --- session in archive: " + id + " with timeout: " + to);
             }
             count--;
         }
+        
         dt.deserialize(ia, "tree");
     }
 
-    public static void serializeSnapshot(DataTree dt,OutputArchive oa,
-            Map<Long, Integer> sessions) throws IOException {
+    /** MARK 序列化快照. */
+    public static void serializeSnapshot(DataTree dt,OutputArchive oa, Map<Long, Integer> sessions) throws IOException {
         HashMap<Long, Integer> sessSnap = new HashMap<Long, Integer>(sessions);
         oa.writeInt(sessSnap.size(), "count");
         for (Entry<Long, Integer> entry : sessSnap.entrySet()) {

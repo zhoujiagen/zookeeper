@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
+/** MARK 异步回调定义. */
 public interface AsyncCallback {
     interface StatCallback extends AsyncCallback {
         public void processResult(int rc, String path, Object ctx, Stat stat);

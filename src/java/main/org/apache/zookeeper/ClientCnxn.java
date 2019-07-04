@@ -76,7 +76,7 @@ import org.apache.zookeeper.server.ZooTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/** MARK 客户端连接: 管理客户端的socket IO.
  * This class manages the socket i/o for the client. ClientCnxn maintains a list
  * of available servers to connect to and "transparently" switches servers it is
  * connected to as needed.
@@ -85,8 +85,7 @@ import org.slf4j.LoggerFactory;
 public class ClientCnxn {
     private static final Logger LOG = LoggerFactory.getLogger(ClientCnxn.class);
 
-    private static final String ZK_SASL_CLIENT_USERNAME =
-        "zookeeper.sasl.client.username";
+    private static final String ZK_SASL_CLIENT_USERNAME = "zookeeper.sasl.client.username";
 
     /** This controls whether automatic watch resetting is enabled.
      * Clients automatically reset watches during session reconnect, this
@@ -96,11 +95,9 @@ public class ClientCnxn {
     static {
         // this var should not be public, but otw there is no easy way
         // to test
-        disableAutoWatchReset =
-            Boolean.getBoolean("zookeeper.disableAutoWatchReset");
+        disableAutoWatchReset = Boolean.getBoolean("zookeeper.disableAutoWatchReset");
         if (LOG.isDebugEnabled()) {
-            LOG.debug("zookeeper.disableAutoWatchReset is "
-                    + disableAutoWatchReset);
+            LOG.debug("zookeeper.disableAutoWatchReset is " + disableAutoWatchReset);
         }
     }
 
@@ -117,16 +114,17 @@ public class ClientCnxn {
 
     private final CopyOnWriteArraySet<AuthData> authInfo = new CopyOnWriteArraySet<AuthData>();
 
-    /**
+    /** MARK 已发送的在等待响应的报文
      * These are the packets that have been sent and are waiting for a response.
      */
     private final LinkedList<Packet> pendingQueue = new LinkedList<Packet>();
 
-    /**
+    /** MARK 需要发送的报文
      * These are the packets that need to be sent.
      */
     private final LinkedList<Packet> outgoingQueue = new LinkedList<Packet>();
 
+    /** MARK connectTimeout = sessionTimeout / hostProvider.size()*/
     private int connectTimeout;
 
     /**
@@ -137,6 +135,7 @@ public class ClientCnxn {
      */
     private volatile int negotiatedSessionTimeout;
 
+    /** MARK sessionTimeout * 2 / 3*/
     private int readTimeout;
 
     private final int sessionTimeout;
@@ -159,8 +158,9 @@ public class ClientCnxn {
 
     final String chrootPath;
 
+    /** MARK 发送线程. */
     final SendThread sendThread;
-
+    /** MARK 接收线程. */
     final EventThread eventThread;
 
     /**
@@ -353,7 +353,7 @@ public class ClientCnxn {
      * @param chrootPath - the chroot of this client. Should be removed from this Class in ZOOKEEPER-838
      * @param hostProvider
      *                the list of ZooKeeper servers to connect to
-     * @param sessionTimeout
+     * @param sessionTimeout MARK 连接超时时间
      *                the timeout for connections.
      * @param zooKeeper
      *                the zookeeper object that this connection is related to.
@@ -402,8 +402,8 @@ public class ClientCnxn {
         disableAutoWatchReset = b;
     }
     public void start() {
-        sendThread.start();
-        eventThread.start();
+        sendThread.start();   // MARK 启动发送线程
+        eventThread.start();  // MARK 启动接收线程
     }
 
     private Object eventOfDeath = new Object();
@@ -691,10 +691,10 @@ public class ClientCnxn {
         }
     }
     
-    public static final int packetLen = Integer.getInteger("jute.maxbuffer",
+    public static final int packetLen = Integer.getInteger("jute.maxbuffer", // MARK 包长
             4096 * 1024);
 
-    /**
+    /** MARK 发送线程: 外向请求和心跳; 也负责创建ReadThread
      * This class services the outgoing request queue and generates the heart
      * beats. It also spawns the ReadThread.
      */
@@ -986,10 +986,12 @@ public class ClientCnxn {
             int to;
             long lastPingRwServer = System.currentTimeMillis();
             final int MAX_SEND_PING_INTERVAL = 10000; //10 seconds
+            
             while (state.isAlive()) {
                 try {
+                    // MARK socket未连接时 
                     if (!clientCnxnSocket.isConnected()) {
-                        if(!isFirstConnect){
+                        if(!isFirstConnect) {
                             try {
                                 Thread.sleep(r.nextInt(1000));
                             } catch (InterruptedException e) {
@@ -1004,6 +1006,7 @@ public class ClientCnxn {
                         clientCnxnSocket.updateLastSendAndHeard();
                     }
 
+                    // MARK 句柄已连接时, 可能超时
                     if (state.isConnected()) {
                         // determine whether we need to send an AuthFailed event.
                         if (zooKeeperSaslClient != null) {
@@ -1048,6 +1051,8 @@ public class ClientCnxn {
                                         + " for sessionid 0x"
                                         + Long.toHexString(sessionId));
                     }
+                    
+                    // MARK 句柄已连接时, 未超时
                     if (state.isConnected()) {
                     	//1000(1 second) is to prevent race condition missing to send the second ping
                     	//also make sure not to send too many pings when readTimeout is small 
@@ -1064,6 +1069,7 @@ public class ClientCnxn {
                         }
                     }
 
+                    // MARK 句柄只读已连接
                     // If we are in read-only mode, seek for read/write server
                     if (state == States.CONNECTEDREADONLY) {
                         long now = System.currentTimeMillis();
@@ -1078,6 +1084,7 @@ public class ClientCnxn {
                         to = Math.min(to, pingRwTimeout - idlePingRwServer);
                     }
 
+                    // MARK 执行socket传输层动作
                     clientCnxnSocket.doTransport(to, pendingQueue, outgoingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {
@@ -1119,6 +1126,7 @@ public class ClientCnxn {
                     }
                 }
             }
+            
             cleanup();
             clientCnxnSocket.close();
             if (state.isAlive()) {
@@ -1321,6 +1329,7 @@ public class ClientCnxn {
 
     private int xid = 1;
 
+    /** MARK 句柄的状态*/
     private volatile States state = States.NOT_CONNECTED;
 
     /*
@@ -1331,10 +1340,23 @@ public class ClientCnxn {
         return xid++;
     }
 
+    /**
+     * 提交请求.
+     * @param h
+     * @param request
+     * @param response OUT参数
+     * @param watchRegistration
+     * @return
+     * @throws InterruptedException
+     */
     public ReplyHeader submitRequest(RequestHeader h, Record request,
             Record response, WatchRegistration watchRegistration)
             throws InterruptedException {
         ReplyHeader r = new ReplyHeader();
+        // MARK 传入参数:
+        //RequestHeader h, ReplyHeader r, Record request,
+        //Record response, AsyncCallback cb, String clientPath,
+        //String serverPath, Object ctx, WatchRegistration watchRegistration
         Packet packet = queuePacket(h, r, request, response, null, null, null,
                     null, watchRegistration);
         synchronized (packet) {
@@ -1366,6 +1388,7 @@ public class ClientCnxn {
         sendThread.sendPacket(p);
     }
 
+    /** MARK 将请求放入发送缓冲中. */
     Packet queuePacket(RequestHeader h, ReplyHeader r, Record request,
             Record response, AsyncCallback cb, String clientPath,
             String serverPath, Object ctx, WatchRegistration watchRegistration)
@@ -1392,7 +1415,7 @@ public class ClientCnxn {
                 outgoingQueue.add(packet);
             }
         }
-        sendThread.getClientCnxnSocket().wakeupCnxn();
+        sendThread.getClientCnxnSocket().wakeupCnxn(); // MARK 唤醒发送线程socket
         return packet;
     }
 

@@ -278,6 +278,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
                   targetfile="${src_generated.dir}/.generated"/>
     </target>
 
+	<!-- MARK: A feature which has been replaced by Avro. -->
     <target name="compile_jute" depends="jute,compile_jute_uptodate" unless="juteBuild.notRequired">
         <mkdir dir="${src_generated.dir}" />
         <mkdir dir="${csrc_generated.dir}" />
@@ -323,6 +324,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
         <property file="${revision.dir}/${revision.properties}" />
     </target>
     
+	<!-- MARK 生成版本信息类. -->
     <target name="version-info" depends="ver-gen,svn-revision">
         <mkdir dir="${src_generated.dir}" />
         <java classname="org.apache.zookeeper.version.util.VerGen" fork="true" 

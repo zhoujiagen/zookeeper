@@ -981,8 +981,7 @@ public class Zab1_0Test {
         });
     }
 
-    private void deserializeSnapshot(InputArchive ia)
-            throws IOException {
+    private void deserializeSnapshot(InputArchive ia) throws IOException {
         ZKDatabase zkdb = new ZKDatabase(null);
         zkdb.deserializeSnapshot(ia);
         String signature = ia.readString("signature");

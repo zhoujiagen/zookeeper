@@ -50,7 +50,7 @@ import org.apache.zookeeper.server.quorum.QuorumPacket;
 import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 
-/**
+/** MARK 维护ZK服务器状态的内存数据库: 包括会话, DataTree和已提交日志(Proposal). 在读取磁盘上日志和快照后启动.
  * This class maintains the in memory database of zookeeper
  * server states that includes the sessions, datatree and the
  * committed logs. It is booted up  after reading the logs
@@ -60,17 +60,25 @@ public class ZKDatabase {
     
     private static final Logger LOG = LoggerFactory.getLogger(ZKDatabase.class);
     
-    /**
+    /** 
      * make sure on a clear you take care of 
      * all these members.
      */
+    
+    /** MARK 内存数据树. */
     protected DataTree dataTree;
+    /** MARK 会话超时记录. */
     protected ConcurrentHashMap<Long, Integer> sessionsWithTimeouts;
+    /** MARK 日志和快照. */
     protected FileTxnSnapLog snapLog;
     protected long minCommittedLog, maxCommittedLog;
+    /** MARK 常量: 已提交事务数量限制*/
     public static final int commitLogCount = 500;
+    /** MARK 未使用. */
     protected static int commitLogBuffer = 700;
+    /** MARK an on disk log of proposals accepted. */
     protected LinkedList<Proposal> committedLog = new LinkedList<Proposal>();
+    /** MARK 日志锁. */
     protected ReentrantReadWriteLock logLock = new ReentrantReadWriteLock();
     volatile private boolean initialized = false;
     
@@ -97,18 +105,17 @@ public class ZKDatabase {
     
     /**
      * clear the zkdatabase. 
+     * 
      * Note to developers - be careful to see that 
-     * the clear method does clear out all the
-     * data structures in zkdatabase.
+     * the clear method does clear out all the data structures in zkdatabase.
      */
     public void clear() {
         minCommittedLog = 0;
         maxCommittedLog = 0;
-        /* to be safe we just create a new 
-         * datatree.
-         */
+        /* to be safe we just create a new  datatree. */
         dataTree = new DataTree();
         sessionsWithTimeouts.clear();
+        
         WriteLock lock = logLock.writeLock();
         try {            
             lock.lock();
@@ -116,6 +123,7 @@ public class ZKDatabase {
         } finally {
             lock.unlock();
         }
+        
         initialized = false;
     }
     
@@ -154,18 +162,19 @@ public class ZKDatabase {
         return logLock;
     }
     
-
     public synchronized LinkedList<Proposal> getCommittedLog() {
         ReadLock rl = logLock.readLock();
+        
         // only make a copy if this thread isn't already holding a lock
-        if(logLock.getReadHoldCount() <=0) {
+        if(logLock.getReadHoldCount() <= 0) {
             try {
                 rl.lock();
                 return new LinkedList<Proposal>(this.committedLog);
             } finally {
                 rl.unlock();
             }
-        } 
+        }
+        
         return this.committedLog;
     }      
     
@@ -202,17 +211,17 @@ public class ZKDatabase {
     }
 
     
-    /**
+    /** MARK 从磁盘加载数据库到内容中, 将事务添加到内容中的committedlog.
      * load the database from the disk onto memory and also add 
      * the transactions to the committedlog in memory.
-     * @return the last valid zxid on disk
+     * @return the last valid zxid on disk 磁盘上最后一个有效的事务ID
      * @throws IOException
      */
     public long loadDataBase() throws IOException {
-        PlayBackListener listener=new PlayBackListener(){
+        // MARK 事务记录回放处理: 添加已提交的提案
+        PlayBackListener listener = new PlayBackListener(){
             public void onTxnLoaded(TxnHeader hdr,Record txn){
-                Request r = new Request(null, 0, hdr.getCxid(),hdr.getType(),
-                        null, null);
+                Request r = new Request(null, 0, hdr.getCxid(),hdr.getType(), null, null);
                 r.txn = txn;
                 r.hdr = hdr;
                 r.zxid = hdr.getZxid();
@@ -220,19 +229,20 @@ public class ZKDatabase {
             }
         };
         
-        long zxid = snapLog.restore(dataTree,sessionsWithTimeouts,listener);
+        // MARK 恢复内存数据库(数据树, 会话超时记录): 从日志和快照文件
+        long zxid = snapLog.restore(dataTree,sessionsWithTimeouts,listener);   
         initialized = true;
         return zxid;
     }
     
-    /**
-     * maintains a list of last <i>committedLog</i>
-     *  or so committed requests. This is used for
-     * fast follower synchronization.
-     * @param request committed request
+    /** MARK 维护已提交日志committedLog.
+     * maintains a list of last <i>committedLog</i> or so committed requests. 
+     * <p>This is used for fast follower synchronization.
+     * @param request committed request - zxid, hdr, txn
      */
     public void addCommittedProposal(Request request) {
         WriteLock wl = logLock.writeLock();
+        
         try {
             wl.lock();
             if (committedLog.size() > commitLogCount) {
@@ -255,8 +265,9 @@ public class ZKDatabase {
             } catch (IOException e) {
                 LOG.error("This really should be impossible", e);
             }
-            QuorumPacket pp = new QuorumPacket(Leader.PROPOSAL, request.zxid,
-                    baos.toByteArray(), null);
+            
+            // MARK Propose a message. (Request that it be accepted into a followers history.)
+            QuorumPacket pp = new QuorumPacket(Leader.PROPOSAL, request.zxid, baos.toByteArray(), null);
             Proposal p = new Proposal();
             p.packet = pp;
             p.request = request;

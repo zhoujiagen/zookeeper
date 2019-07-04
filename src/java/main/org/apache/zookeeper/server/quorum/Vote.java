@@ -26,8 +26,14 @@ import org.slf4j.LoggerFactory;
 public class Vote {
     private static final Logger LOG = LoggerFactory.getLogger(Vote.class);
     
-    public Vote(long id, 
-                    long zxid) {
+    final private int version;        // 0x0
+    final private long id;
+    final private long zxid;
+    final private long electionEpoch; // -1
+    final private long peerEpoch;     // -1
+    final private ServerState state;  // ServerState.LOOKING
+    
+    public Vote(long id, long zxid) {
         this.version = 0x0;
         this.id = id;
         this.zxid = zxid;
@@ -36,9 +42,7 @@ public class Vote {
         this.state = ServerState.LOOKING;
     }
     
-    public Vote(long id, 
-                    long zxid, 
-                    long peerEpoch) {
+    public Vote(long id, long zxid, long peerEpoch) {
         this.version = 0x0;
         this.id = id;
         this.zxid = zxid;
@@ -47,10 +51,7 @@ public class Vote {
         this.state = ServerState.LOOKING;
     }
 
-    public Vote(long id, 
-                    long zxid, 
-                    long electionEpoch, 
-                    long peerEpoch) {
+    public Vote(long id, long zxid, long electionEpoch, long peerEpoch) {
         this.version = 0x0;
         this.id = id;
         this.zxid = zxid;
@@ -59,12 +60,7 @@ public class Vote {
         this.state = ServerState.LOOKING;
     }
     
-    public Vote(int version,
-                    long id, 
-                    long zxid, 
-                    long electionEpoch, 
-                    long peerEpoch, 
-                    ServerState state) {
+    public Vote(int version, long id, long zxid, long electionEpoch, long peerEpoch, ServerState state) {
         this.version = version;
         this.id = id;
         this.zxid = zxid;
@@ -73,11 +69,7 @@ public class Vote {
         this.peerEpoch = peerEpoch;
     }
     
-    public Vote(long id, 
-                    long zxid, 
-                    long electionEpoch, 
-                    long peerEpoch, 
-                    ServerState state) {
+    public Vote(long id, long zxid, long electionEpoch, long peerEpoch, ServerState state) {
         this.id = id;
         this.zxid = zxid;
         this.electionEpoch = electionEpoch;
@@ -85,16 +77,6 @@ public class Vote {
         this.peerEpoch = peerEpoch;
         this.version = 0x0;
     }
-    
-    final private int version;
-    
-    final private long id;
-    
-    final private long zxid;
-    
-    final private long electionEpoch;
-    
-    final private long peerEpoch;
     
     public int getVersion() {
         return version;
@@ -120,8 +102,6 @@ public class Vote {
         return state;
     }
 
-    final private ServerState state;
-    
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Vote)) {

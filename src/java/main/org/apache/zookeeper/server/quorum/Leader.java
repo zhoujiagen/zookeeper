@@ -60,11 +60,10 @@ public class Leader {
         LOG.info("TCP NoDelay set to: " + nodelay);
     }
 
+    /** MARK 提案. */
     static public class Proposal {
         public QuorumPacket packet;
-
         public HashSet<Long> ackSet = new HashSet<Long>();
-
         public Request request;
 
         @Override
@@ -74,17 +73,12 @@ public class Leader {
     }
 
     final LeaderZooKeeperServer zk;
-
     final QuorumPeer self;
-
     private boolean quorumFormed = false;
-    
     // the follower acceptor thread
     LearnerCnxAcceptor cnxAcceptor;
-    
     // list of all the followers
-    private final HashSet<LearnerHandler> learners =
-        new HashSet<LearnerHandler>();
+    private final HashSet<LearnerHandler> learners = new HashSet<LearnerHandler>();
 
     /**
      * Returns a copy of the current learner snapshot
@@ -145,9 +139,7 @@ public class Leader {
 
     /**
      * Adds peer to the leader.
-     * 
-     * @param learner
-     *                instance of learner handle
+     * @param learner instance of learner handle
      */
     void addLearnerHandler(LearnerHandler learner) {
         synchronized (learners) {
@@ -157,7 +149,6 @@ public class Leader {
 
     /**
      * Remove the learner from the learner list
-     * 
      * @param peer
      */
     void removeLearnerHandler(LearnerHandler peer) {
@@ -183,14 +174,14 @@ public class Leader {
     Leader(QuorumPeer self,LeaderZooKeeperServer zk) throws IOException {
         this.self = self;
         try {
-            if (self.getQuorumListenOnAllIPs()) {
+            if (self.getQuorumListenOnAllIPs()) { // MARK quorumListenOnAllIPs的使用
                 ss = new ServerSocket(self.getQuorumAddress().getPort());
             } else {
                 ss = new ServerSocket();
             }
             ss.setReuseAddress(true);
             if (!self.getQuorumListenOnAllIPs()) {
-                ss.bind(self.getQuorumAddress());
+                ss.bind(self.getQuorumAddress()); // MARK 绑定follower连接端口
             }
         } catch (BindException e) {
             if (self.getQuorumListenOnAllIPs()) {
@@ -203,98 +194,42 @@ public class Leader {
         this.zk=zk;
     }
 
-    /**
-     * This message is for follower to expect diff
-     */
-    final static int DIFF = 13;
+    // MARK REF https://cwiki.apache.org/confluence/display/ZOOKEEPER/Zab1.0
     
-    /**
-     * This is for follower to truncate its logs 
-     */
-    final static int TRUNC = 14;
-    
-    /**
-     * This is for follower to download the snapshots
-     */
-    final static int SNAP = 15;
-    
-    /**
-     * This tells the leader that the connecting peer is actually an observer
-     */
-    final static int OBSERVERINFO = 16;
-    
-    /**
-     * This message type is sent by the leader to indicate it's zxid and if
-     * needed, its database.
-     */
-    final static int NEWLEADER = 10;
-
-    /**
-     * This message type is sent by a follower to pass the last zxid. This is here
-     * for backward compatibility purposes.
-     */
-    final static int FOLLOWERINFO = 11;
-
-    /**
-     * This message type is sent by the leader to indicate that the follower is
-     * now uptodate andt can start responding to clients.
-     */
-    final static int UPTODATE = 12;
-
-    /**
-     * This message is the first that a follower receives from the leader.
-     * It has the protocol version and the epoch of the leader.
-     */
-    public static final int LEADERINFO = 17;
-
-    /**
-     * This message is used by the follow to ack a proposed epoch.
-     */
-    public static final int ACKEPOCH = 18;
-    
-    /**
-     * This message type is sent to a leader to request and mutation operation.
-     * The payload will consist of a request header followed by a request.
-     */
+    /** This message type is sent to a leader to request and mutation operation. The payload will consist of a request header followed by a request. */
     final static int REQUEST = 1;
-
-    /**
-     * This message type is sent by a leader to propose a mutation.
-     */
+    /** This message type is sent by a leader to propose a mutation. */
     public final static int PROPOSAL = 2;
-
-    /**
-     * This message type is sent by a follower after it has synced a proposal.
-     */
+    /** This message type is sent by a follower after it has synced a proposal. */
     final static int ACK = 3;
-
-    /**
-     * This message type is sent by a leader to commit a proposal and cause
-     * followers to start serving the corresponding data.
-     */
+    /** This message type is sent by a leader to commit a proposal and cause followers to start serving the corresponding data. */
     final static int COMMIT = 4;
-
-    /**
-     * This message type is enchanged between follower and leader (initiated by
-     * follower) to determine liveliness.
-     */
+    /** This message type is enchanged between follower and leader (initiated by follower) to determine liveliness. */
     final static int PING = 5;
-
-    /**
-     * This message type is to validate a session that should be active.
-     */
+    /** This message type is to validate a session that should be active. */
     final static int REVALIDATE = 6;
-
-    /**
-     * This message is a reply to a synchronize command flushing the pipe
-     * between the leader and the follower.
-     */
+    /** This message is a reply to a synchronize command flushing the pipe between the leader and the follower. */
     final static int SYNC = 7;
-        
-    /**
-     * This message type informs observers of a committed proposal.
-     */
+    /** This message type informs observers of a committed proposal. */
     final static int INFORM = 8;
+    /** This message type is sent by the leader to indicate it's zxid and if needed, its database. */
+    final static int NEWLEADER = 10;
+    /** This message type is sent by a follower to pass the last zxid. This is here for backward compatibility purposes.  */
+    final static int FOLLOWERINFO = 11;
+    /** This message type is sent by the leader to indicate that the follower is now uptodate andt can start responding to clients. */
+    final static int UPTODATE = 12;
+    /** This message is the first that a follower receives from the leader. It has the protocol version and the epoch of the leader. */
+    /** This message is for follower to expect diff */
+    final static int DIFF = 13;
+    /** This is for follower to truncate its logs  */
+    final static int TRUNC = 14;
+    /**  This is for follower to download the snapshots */
+    final static int SNAP = 15;
+    /** This tells the leader that the connecting peer is actually an observer */
+    final static int OBSERVERINFO = 16;
+    public static final int LEADERINFO = 17;
+    /** This message is used by the follow to ack a proposed epoch. */
+    public static final int ACKEPOCH = 18;
 
     ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
 
@@ -435,7 +370,7 @@ public class Leader {
                 zk.setZxid((zk.getZxid() & 0xffffffff00000000L) | zxid);
             }
             
-            if (!System.getProperty("zookeeper.leaderServes", "yes").equals("no")) {
+            if (!System.getProperty("zookeeper.leaderServes", "yes").equals("no")) { // MARK leader协同更新外, 是否接受客户端连接
                 self.cnxnFactory.setZooKeeperServer(zk);
             }
             // Everything is a go, simply start counting the ticks

@@ -42,7 +42,7 @@ import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.data.Stat;
 import java.util.StringTokenizer;
 
-/**
+/** MARK 命令行客户端: zkCli.sh.
  * The command line client to ZooKeeper.
  *
  */
@@ -55,7 +55,7 @@ public class ZooKeeperMain {
     protected int commandCount = 0;
     protected boolean printWatches = true;
 
-    protected ZooKeeper zk;
+    protected ZooKeeper zk; // MARK 使用ZK句柄
     protected String host = "";
 
     public boolean getPrintWatches( ) {
@@ -320,7 +320,7 @@ public class ZooKeeperMain {
                 String line;
                 Method readLine = consoleC.getMethod("readLine", String.class);
                 while ((line = (String)readLine.invoke(console, getPrompt())) != null) {
-                    executeLine(line);
+                    executeLine(line); // MARK 执行行命令
                 }
             } catch (ClassNotFoundException e) {
                 LOG.debug("Unable to start jline", e);
@@ -357,7 +357,7 @@ public class ZooKeeperMain {
       if (!line.equals("")) {
         cl.parseCommand(line);
         addToHistory(commandCount,line);
-        processCmd(cl);
+        processCmd(cl); // MARK 执行命令
         commandCount++;
       }
     }

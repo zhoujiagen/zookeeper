@@ -1,0 +1,105 @@
+06,138 [myid:] - INFO  [main:QuorumPeerConfig@108] - Reading configuration from: conf/quorum/zoo2.cfg
+06,148 [myid:] - INFO  [main:QuorumPeerConfig@344] - Defaulting to majority quorums
+06,152 [myid:2] - INFO  [main:DatadirCleanupManager@74] - autopurge.snapRetainCount set to 3
+06,152 [myid:2] - INFO  [main:DatadirCleanupManager@75] - autopurge.purgeInterval set to 0
+06,154 [myid:2] - INFO  [main:DatadirCleanupManager@97] - Purge task is not scheduled.
+
+06,245 [myid:2] - INFO  [main:QuorumPeerMain@130] - Starting quorum peer
+06,272 [myid:2] - INFO  [main:NIOServerCnxnFactory@97] - binding to port 0.0.0.0/0.0.0.0:2182
+06,286 [myid:2] - DEBUG [main:FileTxnSnapLog@74] - Opening datadir:conf/quorum/data2 snapDir:conf/quorum/data2
+06,291 [myid:2] - INFO  [main:QuorumPeer@901] - tickTime set to 2000
+06,291 [myid:2] - INFO  [main:QuorumPeer@921] - minSessionTimeout set to -1
+06,291 [myid:2] - INFO  [main:QuorumPeer@932] - maxSessionTimeout set to -1
+06,292 [myid:2] - INFO  [main:QuorumPeer@947] - initLimit set to 10
+06,301 [myid:2] - INFO  [main:QuorumPeer@443] - currentEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+06,305 [myid:2] - INFO  [main:QuorumPeer@460] - acceptedEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+
+06,309 [myid:2] - INFO  [Thread-1:QuorumCnxManager$Listener@461] - My election bind port: /127.0.0.1:3334
+
+06,312 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:QuorumPeer@617] - Starting quorum peer
+
+06,316 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:QuorumPeer@653] - LOOKING
+06,317 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:QuorumPeer@587] - Initializing leader election protocol...
+
+06,317 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@637] - Updating proposal: 2 (newleader), 0x0 (newzxid), -1 (oldleader), 0xffffffffffffffff (oldzxid)
+06,318 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@731] - New election. My id =  2, proposed zxid=0x0
+06,318 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@504] - Sending Notification: 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 1 (recipient), 2 (myid), 0x0 (n.peerEpoch)
+06,319 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@504] - Sending Notification: 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 2 (recipient), 2 (myid), 0x0 (n.peerEpoch)
+06,319 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@504] - Sending Notification: 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), 3 (recipient), 2 (myid), 0x0 (n.peerEpoch)
+
+06,319 [myid:2] - DEBUG [WorkerSender[myid=2]:QuorumCnxManager@336] - Opening channel to server 1 at election address /127.0.0.1:2223
+06,323 [myid:2] - DEBUG [WorkerSender[myid=2]:QuorumCnxManager@342] - Connected to server 1 at election address /127.0.0.1:2223, at local address /127.0.0.1:49538
+06,326 [myid:2] - DEBUG [WorkerSender[myid=2]:QuorumCnxManager$SendWorker@545] - Address of remote peer: 1
+
+06,328 [myid:2] - DEBUG [WorkerSender[myid=2]:QuorumCnxManager@336] - Opening channel to server 3 at election address /127.0.0.1:4445
+06,328 [myid:2] - DEBUG [WorkerReceiver[myid=2]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 2
+06,329 [myid:2] - INFO  [WorkerReceiver[myid=2]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 2 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+06,330 [myid:2] - DEBUG [WorkerReceiver[myid=2]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 2
+06,330 [myid:2] - INFO  [WorkerReceiver[myid=2]:FastLeaderElection@515] - Notification: 1 (message format version), 1 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 1 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+06,330 [myid:2] - DEBUG [WorkerReceiver[myid=2]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 2
+06,330 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@526] - id: 2, proposed id: 2, zxid: 0x0, proposed zxid: 0x0
+06,330 [myid:2] - WARN  [WorkerSender[myid=2]:QuorumCnxManager@354] - Cannot open channel to 3 at election address /127.0.0.1:4445
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:589)
+	at org.apache.zookeeper.server.quorum.QuorumCnxManager.connectOne(QuorumCnxManager.java:340)
+	at org.apache.zookeeper.server.quorum.QuorumCnxManager.toSend(QuorumCnxManager.java:316)
+	at org.apache.zookeeper.server.quorum.FastLeaderElection$Messenger$WorkerSender.process(FastLeaderElection.java:386)
+	at org.apache.zookeeper.server.quorum.FastLeaderElection$Messenger$WorkerSender.run(FastLeaderElection.java:372)
+	at java.lang.Thread.run(Thread.java:748)
+06,330 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@780] - Adding vote: from=2, proposed leader=2, proposed zxid=0x0, proposed election epoch=0x1
+06,333 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@526] - id: 1, proposed id: 2, zxid: 0x0, proposed zxid: 0x0
+06,333 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@780] - Adding vote: from=1, proposed leader=1, proposed zxid=0x0, proposed election epoch=0x1
+06,330 [myid:2] - INFO  [WorkerReceiver[myid=2]:FastLeaderElection@515] - Notification: 1 (message format version), 2 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 1 (n.sid), 0x0 (n.peerEpoch) LOOKING (my state)
+06,334 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@526] - id: 2, proposed id: 2, zxid: 0x0, proposed zxid: 0x0
+06,334 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@780] - Adding vote: from=1, proposed leader=2, proposed zxid=0x0, proposed election epoch=0x1
+
+06,537 [myid:2] - DEBUG [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:FastLeaderElection@468] - About to leave FLE instance: leader=2, zxid=0x0, my id=2, my state=LEADING
+06,538 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:QuorumPeer@744] - LEADING
+
+06,541 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Leader@60] - TCP NoDelay set to: true
+06,689 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:zookeeper.version=3.4.6--1, built on 01/15/2019 05:16 GMT
+06,689 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:host.name=localhost
+06,689 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.version=1.8.0_172
+06,689 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.vendor=Oracle Corporation
+06,690 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home/jre
+06,690 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.class.path=/Users/zhoujiagen/rtfsc/zookeeper/.eclipse/classes-main:/Users/zhoujiagen/rtfsc/zookeeper/.eclipse/classes-test:/Users/zhoujiagen/.ant/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.6.1.jar:/Users/zhoujiagen/.ant/cache/org.slf4j/slf4j-log4j12/jars/slf4j-log4j12-1.6.1.jar:/Users/zhoujiagen/.ant/cache/log4j/log4j/bundles/log4j-1.2.16.jar:/Users/zhoujiagen/.ant/cache/jline/jline/jars/jline-0.9.94.jar:/Users/zhoujiagen/.ant/cache/io.netty/netty/jars/netty-3.7.0.Final.jar:/Users/zhoujiagen/.ant/cache/junit/junit/jars/junit-4.8.1.jar:/Users/zhoujiagen/.ant/cache/org.mockito/mockito-all/jars/mockito-all-1.8.2.jar:/Users/zhoujiagen/.ant/cache/checkstyle/checkstyle/jars/checkstyle-5.0.jar
+06,690 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.library.path=/Users/zhoujiagen/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+06,690 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.io.tmpdir=/var/folders/bx/b53q_zf95sx3lwpmqvjdqczc0000gn/T/
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:java.compiler=<NA>
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:os.name=Mac OS X
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:os.arch=x86_64
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:os.version=10.13.3
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:user.name=zhoujiagen
+06,691 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:user.home=/Users/zhoujiagen
+06,692 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Environment@100] - Server environment:user.dir=/Users/zhoujiagen/rtfsc/zookeeper
+06,693 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:ZooKeeperServer@163] - Created server with tickTime 2000 minSessionTimeout 4000 maxSessionTimeout 40000 datadir conf/quorum/data2/version-2 snapdir conf/quorum/data2/version-2
+06,695 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Leader@293] - LEADING - LEADER ELECTION TOOK - 378
+
+06,704 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49541:LearnerHandler@330] - Follower sid: 1 : info : org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer@77681d0c
+06,707 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49541:LearnerHandler@385] - Synchronizing with Follower sid: 1 maxCommittedLog=0x0 minCommittedLog=0x0 peerLastZxid=0x0
+06,707 [myid:2] - DEBUG [LearnerHandler-/127.0.0.1:49541:LearnerHandler@452] - committedLog is empty but leader and follower are in sync, zxid=0x0
+06,707 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49541:LearnerHandler@462] - Sending DIFF
+06,717 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49541:LearnerHandler@522] - Received NEWLEADER-ACK message from 1
+06,718 [myid:2] - INFO  [QuorumPeer[myid=2]/0:0:0:0:0:0:0:0:2182:Leader@878] - Have quorum of supporters, sids: [ 1,2 ]; starting up and setting last processed zxid: 0x100000000
+06,737 [myid:2] - TRACE [LearnerHandler-/127.0.0.1:49541:Leader@475] - Ack zxid: 0x100000000
+06,737 [myid:2] - TRACE [LearnerHandler-/127.0.0.1:49541:Leader@481] - outstanding proposals all
+08,972 [myid:2] - INFO  [/127.0.0.1:3334:QuorumCnxManager$Listener@468] - Received connection request /127.0.0.1:49545
+08,973 [myid:2] - DEBUG [/127.0.0.1:3334:QuorumCnxManager$SendWorker@545] - Address of remote peer: 3
+08,973 [myid:2] - DEBUG [WorkerReceiver[myid=2]:FastLeaderElection$Messenger$WorkerReceiver@237] - Receive new notification message. My id = 2
+08,974 [myid:2] - INFO  [WorkerReceiver[myid=2]:FastLeaderElection@515] - Notification: 1 (message format version), 3 (n.leader), 0x0 (n.zxid), 0x1 (n.round), LOOKING (n.state), 3 (n.sid), 0x0 (n.peerEpoch) LEADING (my state)
+08,974 [myid:2] - DEBUG [WorkerReceiver[myid=2]:FastLeaderElection$Messenger$WorkerReceiver@315] - Sending new notification. My id =  2 recipient=3 zxid=0x0 leader=2
+08,974 [myid:2] - DEBUG [WorkerSender[myid=2]:QuorumCnxManager@357] - There is a connection already for server 3
+
+08,995 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49546:LearnerHandler@330] - Follower sid: 3 : info : org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer@73e734ce
+08,997 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49546:LearnerHandler@385] - Synchronizing with Follower sid: 3 maxCommittedLog=0x0 minCommittedLog=0x0 peerLastZxid=0x0
+08,997 [myid:2] - DEBUG [LearnerHandler-/127.0.0.1:49546:LearnerHandler@459] - proposals is empty
+08,997 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49546:LearnerHandler@462] - Sending SNAP
+08,997 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49546:LearnerHandler@486] - Sending snapshot last zxid of peer is 0x0  zxid of leader is 0x100000000sent zxid of db as 0x100000000
+09,003 [myid:2] - INFO  [LearnerHandler-/127.0.0.1:49546:LearnerHandler@522] - Received NEWLEADER-ACK message from 3
+09,004 [myid:2] - TRACE [LearnerHandler-/127.0.0.1:49546:Leader@475] - Ack zxid: 0x100000000
+09,004 [myid:2] - TRACE [LearnerHandler-/127.0.0.1:49546:Leader@481] - outstanding proposals all

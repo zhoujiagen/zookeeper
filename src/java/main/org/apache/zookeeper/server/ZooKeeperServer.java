@@ -67,9 +67,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-/**
- * This class implements a simple standalone ZooKeeperServer. It sets up the
- * following chain of RequestProcessors to process requests:
+/** MARK standalone server实现.
+ * This class implements a simple standalone ZooKeeperServer. 
+ * 
+ * It sets up the following chain of RequestProcessors to process requests:
  * PrepRequestProcessor -> SyncRequestProcessor -> FinalRequestProcessor
  */
 public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
@@ -286,8 +287,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         }
     }
 
+    /** MARK 执行快照. */
     public void takeSnapshot(){
-
         try {
             txnLogFactory.save(zkDb.getDataTree(), zkDb.getSessionWithTimeOuts());
         } catch (IOException e) {
@@ -685,7 +686,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     }
 
     public static int getSnapCount() {
-        String sc = System.getProperty("zookeeper.snapCount");
+        String sc = System.getProperty("zookeeper.snapCount"); // MARK 事务日志中写入[snapCount/2+1, snapCount]范围内个日志时, 执行快照
         try {
             int snapCount = Integer.parseInt(sc);
 
@@ -701,7 +702,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     }
 
     public int getGlobalOutstandingLimit() {
-        String sc = System.getProperty("zookeeper.globalOutstandingLimit");
+        String sc = System.getProperty("zookeeper.globalOutstandingLimit"); // MARK 全局请求的最大数量
         int limit;
         try {
             limit = Integer.parseInt(sc);
@@ -802,6 +803,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         return serverCnxnFactory.getNumAliveConnections();
     }
     
+    /** MARK server: 处理连接请求. */
     public void processConnectRequest(ServerCnxn cnxn, ByteBuffer incomingBuffer) throws IOException {
         BinaryInputArchive bia = BinaryInputArchive.getArchive(new ByteBufferInputStream(incomingBuffer));
         ConnectRequest connReq = new ConnectRequest();
@@ -856,6 +858,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         // session is setup
         cnxn.disableRecv();
         long sessionId = connReq.getSessionId();
+        // MARK 请求中会话ID为0时会创建会话, 非0时重打开会话
         if (sessionId != 0) {
             long clientSessionId = connReq.getSessionId();
             LOG.info("Client attempting to renew session 0x"

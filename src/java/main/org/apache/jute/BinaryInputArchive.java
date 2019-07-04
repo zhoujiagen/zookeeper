@@ -83,7 +83,7 @@ public class BinaryInputArchive implements InputArchive {
     	return new String(b, "UTF8");
     }
     
-    static public final int maxBuffer = Integer.getInteger("jute.maxbuffer", 0xfffff);
+    static public final int maxBuffer = Integer.getInteger("jute.maxbuffer", 0xfffff); // MARK znode数据最大值: 1MB
 
     public byte[] readBuffer(String tag) throws IOException {
         int len = readInt(tag);

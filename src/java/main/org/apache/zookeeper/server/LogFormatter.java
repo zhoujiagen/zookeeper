@@ -37,6 +37,7 @@ import org.apache.zookeeper.server.persistence.FileTxnLog;
 import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 
+/** MARK 日志格式化器. */
 public class LogFormatter {
     private static final Logger LOG = LoggerFactory.getLogger(LogFormatter.class);
 
@@ -48,11 +49,13 @@ public class LogFormatter {
             System.err.println("USAGE: LogFormatter log_file");
             System.exit(2);
         }
+        
         FileInputStream fis = new FileInputStream(args[0]);
         BinaryInputArchive logStream = BinaryInputArchive.getArchive(fis);
+        
+        // MARK 文件头
         FileHeader fhdr = new FileHeader();
         fhdr.deserialize(logStream, "fileheader");
-
         if (fhdr.getMagic() != FileTxnLog.TXNLOG_MAGIC) {
             System.err.println("Invalid magic number for " + args[0]);
             System.exit(2);
@@ -66,40 +69,52 @@ public class LogFormatter {
             long crcValue;
             byte[] bytes;
             try {
+                // MARK 记录: CRC, 事务内容
                 crcValue = logStream.readLong("crcvalue");
-
                 bytes = logStream.readBuffer("txnEntry");
             } catch (EOFException e) {
                 System.out.println("EOF reached after " + count + " txns.");
                 return;
             }
+            
             if (bytes.length == 0) {
                 // Since we preallocate, we define EOF to be an
                 // empty transaction
                 System.out.println("EOF reached after " + count + " txns.");
                 return;
             }
+            
             Checksum crc = new Adler32();
             crc.update(bytes, 0, bytes.length);
             if (crcValue != crc.getValue()) {
                 throw new IOException("CRC doesn't match " + crcValue +
                         " vs " + crc.getValue());
             }
+            
             TxnHeader hdr = new TxnHeader();
             Record txn = SerializeUtils.deserializeTxn(bytes, hdr);
-            System.out.println(DateFormat.getDateTimeInstance(DateFormat.SHORT,
-                    DateFormat.LONG).format(new Date(hdr.getTime()))
+            System.out.println(
+                    // TxnHeader.time
+                    DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG).format(new Date(hdr.getTime()))
+                    // TxnHeader.clientId
                     + " session 0x"
                     + Long.toHexString(hdr.getClientId())
+                    // TxnHeader.cxid
                     + " cxid 0x"
                     + Long.toHexString(hdr.getCxid())
+                    // TxnHeader.zxid
                     + " zxid 0x"
                     + Long.toHexString(hdr.getZxid())
+                    // TxnHeader.type
+                    // txn
                     + " " + TraceFormatter.op2String(hdr.getType()) + " " + txn);
+            
+            // MARK 记录结束字符: 'B'
             if (logStream.readByte("EOR") != 'B') {
                 LOG.error("Last transaction was partial.");
                 throw new EOFException("Last transaction was partial.");
             }
+            
             count++;
         }
     }

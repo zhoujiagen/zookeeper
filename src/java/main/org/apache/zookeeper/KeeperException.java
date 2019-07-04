@@ -283,7 +283,8 @@ public abstract class KeeperException extends Exception {
         // public static final int SessionMoved = -118;
     }
 
-    /** Codes which represent the various KeeperException
+    /** MARK 异常编码.
+     * Codes which represent the various KeeperException
      * types. This enum replaces the deprecated earlier static final int
      * constants. The old, deprecated, values are in "camel case" while the new
      * enum values are in all CAPS.

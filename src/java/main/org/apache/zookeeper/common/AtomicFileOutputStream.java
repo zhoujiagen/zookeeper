@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * in case of bug fixing, history, etc...
  */
 
-/**
+/** MARK 原子性文件输出流: 使用.tmp文件, 完整写入磁盘后重命名.
  * A FileOutputStream that has the property that it will only show up at its
  * destination once it has been entirely written and flushed to disk. While
  * being written, it will use a .tmp suffix.
@@ -46,21 +46,17 @@ import org.slf4j.LoggerFactory;
 public class AtomicFileOutputStream extends FilterOutputStream {
     private static final String TMP_EXTENSION = ".tmp";
 
-    private final static Logger LOG = LoggerFactory
-            .getLogger(AtomicFileOutputStream.class);
+    private final static Logger LOG = LoggerFactory.getLogger(AtomicFileOutputStream.class);
 
     private final File origFile;
     private final File tmpFile;
 
     public AtomicFileOutputStream(File f) throws FileNotFoundException {
         // Code unfortunately must be duplicated below since we can't assign
-        // anything
-        // before calling super
-        super(new FileOutputStream(new File(f.getParentFile(), f.getName()
-                + TMP_EXTENSION)));
+        // anything before calling super
+        super(new FileOutputStream(new File(f.getParentFile(), f.getName() + TMP_EXTENSION)));
         origFile = f.getAbsoluteFile();
-        tmpFile = new File(f.getParentFile(), f.getName() + TMP_EXTENSION)
-                .getAbsoluteFile();
+        tmpFile = new File(f.getParentFile(), f.getName() + TMP_EXTENSION).getAbsoluteFile();
     }
 
     @Override
@@ -79,15 +75,12 @@ public class AtomicFileOutputStream extends FilterOutputStream {
                 if (!renamed) {
                     // On windows, renameTo does not replace.
                     if (!origFile.delete() || !tmpFile.renameTo(origFile)) {
-                        throw new IOException(
-                                "Could not rename temporary file " + tmpFile
-                                        + " to " + origFile);
+                        throw new IOException("Could not rename temporary file " + tmpFile + " to " + origFile);
                     }
                 }
             } else {
                 if (!triedToClose) {
-                    // If we failed when flushing, try to close it to not leak
-                    // an FD
+                    // If we failed when flushing, try to close it to not leak an FD
                     IOUtils.closeStream(out);
                 }
                 // close wasn't successful, try to delete the tmp file

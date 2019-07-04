@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.persistence.Util;
 
-/**
+/** MARK 清除快照和数据日志目录.
  * this class is used to clean up the 
  * snapshot and data log dir's. This is usually
  * run as a cronjob on the zookeeper server machine.

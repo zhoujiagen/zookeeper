@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.apache.zookeeper.server.DataTree;
 
-/**
+/** MARK 快照接口.
  * snapshot interface for the persistence layer.
  * implement this interface for implementing 
  * snapshots.
@@ -38,8 +38,7 @@ public interface SnapShot {
      * @return the last zxid that was deserialized from the snapshot
      * @throws IOException
      */
-    long deserialize(DataTree dt, Map<Long, Integer> sessions) 
-        throws IOException;
+    long deserialize(DataTree dt, Map<Long, Integer> sessions)  throws IOException;
     
     /**
      * persist the datatree and the sessions into a persistence storage
@@ -47,9 +46,7 @@ public interface SnapShot {
      * @param sessions 
      * @throws IOException
      */
-    void serialize(DataTree dt, Map<Long, Integer> sessions, 
-            File name) 
-        throws IOException;
+    void serialize(DataTree dt, Map<Long, Integer> sessions, File name) throws IOException;
     
     /**
      * find the most recent snapshot file
